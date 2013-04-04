@@ -1,0 +1,2 @@
+#!/bin/csh -f
+./lexer $* | ./parser $* | /usr/class/cs143/cool/lib/.i686/semant $* 
