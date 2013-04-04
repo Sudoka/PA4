@@ -81,11 +81,26 @@ static void initialize_constants(void)
     val         = idtable.add_string("_val");
 }
 
+void class__class::semant() {
+    for ( int i = features->first(); features->more(i); i = features->next(i) ) {
+        features->nth(i)->semant();
+    }
+}
 
+void method_class::semant() {
+}
+
+void attr_class::semant() {
+}
 
 ClassTable::ClassTable(Classes classes) : semant_errors(0) , error_stream(cerr) {
 
+    install_basic_classes();
     /* Fill this in */
+
+    for ( int i = classes->first(); classes->more(i); i = classes->next(i) ) {
+        classes->nth(i)->semant();
+    }
 
 }
 
@@ -189,6 +204,7 @@ void ClassTable::install_basic_classes() {
 						      no_expr()))),
 	       filename);
 }
+
 
 ////////////////////////////////////////////////////////////////////
 //
