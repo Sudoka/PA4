@@ -1,3 +1,7 @@
 *.o
-semant
+*.cl
+correct*
 grading
+mine*
+semant
+tags
