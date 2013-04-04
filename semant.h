@@ -23,6 +23,7 @@ class ClassTable {
 private:
   int semant_errors;
   void install_basic_classes();
+  Class_ current_class;
   ostream& error_stream;
 
 public:
@@ -32,7 +33,8 @@ public:
   ostream& semant_error(Class_ c);
   ostream& semant_error(Symbol filename, tree_node *t);
 
-  void semant_class(Class_ class_);
+  void semant_class(class__class* class_);
+  void semant_feature(Feature feature);
 };
 
 

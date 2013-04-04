@@ -12,6 +12,15 @@
 #include "tree.h"
 #include "cool-tree.handcode.h"
 
+enum TreeType {
+    ClassType,
+    FeatureType,
+    MethodType,
+    AttrType,
+    FormalType,
+    DefaultType
+};
+
 
 // define the class for phylum
 // define simple phylum - Program
@@ -35,7 +44,7 @@ class Class__class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Class_(); }
    virtual Class_ copy_Class_() = 0;
-   virtual void semant() = 0;
+   TreeType getType()        { return ClassType; }
 
 #ifdef Class__EXTRAS
    Class__EXTRAS
@@ -50,7 +59,7 @@ class Feature_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Feature(); }
    virtual Feature copy_Feature() = 0;
-   virtual void semant() = 0;
+   virtual TreeType getType()   { return FeatureType; }
 
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
@@ -163,7 +172,9 @@ public:
    }
    Class_ copy_Class_();
    void dump(ostream& stream, int n);
-   void semant();
+   Symbol getName() const       { return name; }
+   Symbol getParent() const     { return parent; }
+   Features getFeatures() const { return features; }
 
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
@@ -190,7 +201,11 @@ public:
    }
    Feature copy_Feature();
    void dump(ostream& stream, int n);
-   void semant();
+   TreeType getType() const         { return MethodType; }
+   Symbol getName() const           { return name; }
+   Formals getFormal() const        { return formals; }
+   Symbol getReturnType() const     { return return_type; }
+   Expression getExpression() const { return expr; }
 
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS
@@ -215,7 +230,10 @@ public:
    }
    Feature copy_Feature();
    void dump(ostream& stream, int n);
-   void semant();
+   TreeType getType() const         { return AttrType; }
+   Symbol getName() const           { return name; }
+   Symbol getDeclareType() const    { return type_decl; }
+   Expression getExpression() const { return init; }
 
 #ifdef Feature_SHARED_EXTRAS
    Feature_SHARED_EXTRAS

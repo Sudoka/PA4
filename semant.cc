@@ -81,27 +81,66 @@ static void initialize_constants(void)
     val         = idtable.add_string("_val");
 }
 
-void class__class::semant() {
-    for ( int i = features->first(); features->more(i); i = features->next(i) ) {
-        features->nth(i)->semant();
-    }
-}
+/* create symbol table */
+SymbolTable<Symbol, tree_node> class_symtable;
+SymbolTable<Symbol, tree_node> symtable;
 
-void method_class::semant() {
-}
+ClassTable::ClassTable(Classes classes)
+: semant_errors(0) , current_class(NULL), error_stream(cerr) {
+    class_symtable.enterscope();
+    symtable.enterscope();
 
-void attr_class::semant() {
-}
-
-ClassTable::ClassTable(Classes classes) : semant_errors(0) , error_stream(cerr) {
-
-    install_basic_classes();
     /* Fill this in */
+    install_basic_classes();
 
     for ( int i = classes->first(); classes->more(i); i = classes->next(i) ) {
-        classes->nth(i)->semant();
+        class__class* class_ = static_cast<class__class*>(classes->nth(i));
+        if ( class_symtable.lookup(class_->getName()) != NULL ) {
+            ostream& os = semant_error(class_);
+            os << "Class" << class_->getName() << " was previously defined." << endl;
+        }
+        class_symtable.addid(class_->getName(), class_);
     }
 
+    for ( int i = classes->first(); classes->more(i); i = classes->next(i) ) {
+        class__class* class_ = static_cast<class__class*>(classes->nth(i));
+        semant_class(class_);
+    }
+    symtable.exitscope();
+    class_symtable.exitscope();
+}
+
+void ClassTable::semant_class(class__class* class_) {
+    if ( class_symtable.lookup(class_->getParent()) == NULL ) {
+        ostream& os = semant_error(class_);
+        os << "Class" << class_->getName() << " inherits from an undefined class " << class_->getParent() << "." << endl;
+    }
+
+    symtable.enterscope();
+    Features features = class_->getFeatures();
+    for ( int i = features->first(); features->more(i); i = features->next(i) ) {
+        semant_feature(features->nth(i));
+    }
+    symtable.exitscope();
+}
+
+void ClassTable::semant_feature(Feature feature) {
+    if ( feature->getType() == AttrType ) {
+        attr_class* attr = static_cast<attr_class*>(feature);
+        if ( symtable.probe(attr->getName()) != NULL ) {
+            ostream& os = semant_error(current_class);
+            os << "Attribute " << attr->getName() << " is multiply defined in class." << endl;
+        }
+        symtable.addid(attr->getName(), attr);
+    }
+    else {
+        method_class* method = static_cast<method_class*>(feature);
+        if ( symtable.probe(method->getName()) != NULL ) {
+            ostream& os = semant_error(current_class);
+            os << "Method" << method->getName() << " is multiply defined." << endl;
+        }
+        symtable.addid(method->getName(), method);
+    }
 }
 
 void ClassTable::install_basic_classes() {
