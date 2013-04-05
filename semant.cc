@@ -609,6 +609,8 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 MySymTable symtable = class_->getSymTable();
                 if ( name == self ) {
                     expr->type = class_->getName();
+                    // FIXME: if have time XD
+                    //expr->type = SELF_TYPE;
                 }
                 else {
                     SymData* symdata = symtable.lookup(name);
