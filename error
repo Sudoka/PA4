@@ -12,8 +12,6 @@ submission: ..
 	-1 (attrbadinit)	 Init attribute with undefined expression
 	-1 (attroverride)	 Attempt to override parent's attribute
 	-1 (baddispatch)	 Method only in child class, attempted dispatch from parent class
-	-1 (badequalitytest)	 Int compared to String
-	-1 (badequalitytest2)	 Int compared to Bool
 	-1 (badstaticdispatch)	 Bad static dispatch
 	-1 (badwhilebody)	 While body has error
 	-1 (badwhilecond)	 While test has error
@@ -65,8 +63,8 @@ submission: ..
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 	-1 (trickyatdispatch2)	 Tricky (illegal) static dispatch
 =====================================================================
-You got a score of 18 out of 74.
+You got a score of 20 out of 74.
 
 Submit code: 
-PA3-18:d6815c99114ca6a36fdf8298d9e2e11b
+PA3-20:497af1a129e8b1a383b439bc6de9f673
 

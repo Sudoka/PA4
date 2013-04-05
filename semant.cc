@@ -336,10 +336,46 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
         case NegType:
             break;
         case LtType:
+            {
+                lt_class* lt = static_cast<lt_class*>(expr);
+                Expression expr1 = lt->getExpression1();
+                semant_expression(class_, expr1);
+                Expression expr2 = lt->getExpression2();
+                semant_expression(class_, expr2);
+                if ( expr1->type != expr2->type ) {
+                    ostream& os = semant_error(class_);
+                    os << "non-Int arguments: " << expr1->type << " < " << expr2->type << endl;
+                }
+                expr->type = Bool;
+            }
             break;
         case EqType:
+            {
+                eq_class* eq = static_cast<eq_class*>(expr);
+                Expression expr1 = eq->getExpression1();
+                semant_expression(class_, expr1);
+                Expression expr2 = eq->getExpression2();
+                semant_expression(class_, expr2);
+                if ( expr1->type != expr2->type ) {
+                    ostream& os = semant_error(class_);
+                    os << "non-Int arguments: " << expr1->type << " = " << expr2->type << endl;
+                }
+                expr->type = Bool;
+            }
             break;
         case LeqType:
+            {
+                leq_class* leq = static_cast<leq_class*>(expr);
+                Expression expr1 = leq->getExpression1();
+                semant_expression(class_, expr1);
+                Expression expr2 = leq->getExpression2();
+                semant_expression(class_, expr2);
+                if ( expr1->type != expr2->type ) {
+                    ostream& os = semant_error(class_);
+                    os << "non-Int arguments: " << expr1->type << " <= " << expr2->type << endl;
+                }
+                expr->type = Bool;
+            }
             break;
         case CompType:
             break;
