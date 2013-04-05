@@ -58,8 +58,8 @@ typedef class Feature_class *Feature;
 class Feature_class : public tree_node {
 public:
    tree_node *copy()		 { return copy_Feature(); }
+   virtual TreeType getType() const = 0;
    virtual Feature copy_Feature() = 0;
-   virtual TreeType getType()   { return FeatureType; }
 
 #ifdef Feature_EXTRAS
    Feature_EXTRAS
@@ -203,7 +203,7 @@ public:
    void dump(ostream& stream, int n);
    TreeType getType() const         { return MethodType; }
    Symbol getName() const           { return name; }
-   Formals getFormal() const        { return formals; }
+   Formals getFormals() const       { return formals; }
    Symbol getReturnType() const     { return return_type; }
    Expression getExpression() const { return expr; }
 
@@ -256,6 +256,8 @@ public:
    }
    Formal copy_Formal();
    void dump(ostream& stream, int n);
+   Symbol getName() const           { return name; }
+   Symbol getDeclareType() const    { return type_decl; }
 
 #ifdef Formal_SHARED_EXTRAS
    Formal_SHARED_EXTRAS

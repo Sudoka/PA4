@@ -31,13 +31,13 @@ submission: ..
 	-1 (comparisons)	 Legal < and <= comparisons
 	-1 (cycleinmethods)	 Methods call each other in a cycle (legal)
 	-1 (dispatch)	 Simple dispatches
-	-1 (dupformals)	 Duplicate name in formal param list
 	-1 (expressionblock)	 Simple expression block (i.e. list)
 	-1 (forwardinherits)	 Forward declaration in inherits clause (legal)
 	-1 (hairyscary)	 Messy legal Cool program
 	-1 (if)	 If statement
 	-1 (inheritsObject)	 Class explicitly inherits Object (legal)
 	-1 (inheritsbool)	 Class inherits Bool (illegal)
+	-1 (inheritsselftype)	 Class inherits SELF_TYPE (illegal)
 	-1 (inheritsstring)	 Class inherits String (illegal)
 	-1 (initwithself)	 Attribute initialized with self (legal)
 	-1 (io)	 IO methods
@@ -63,13 +63,11 @@ submission: ..
 	-1 (overriderenamearg)	 Overriding parent's method with new param names (legal)
 	-1 (overridingmethod4)	 Illegal method override - different param types
 	-1 (signaturechange)	 Method override with different number of params
-	-1 (returntypenoexist)	 Undefined return type
 	-1 (scopes)	 Scope test (legal)
 	-1 (self-assignment)	 Assignment to self (illegal)
 	-1 (selfinformalparameter)	 Self as name of a formal parameter (illegal)
 	-1 (selftypebadreturn)	 Non-conforming return type when SELF_TYPE is declared return type
 	-1 (selftypeparameterposition)	 SELF_TYPE given as a parameter type (illegal)
-	-1 (selftyperedeclared)	 SELF_TYPE redeclared (used a class name)
 	-1 (simplearith)	 Some simple arithmetic exprs
 	-1 (simplecase)	 A simple case expr
 	-1 (staticdispatch)	 Simple static dispatch
@@ -78,8 +76,8 @@ submission: ..
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 	-1 (trickyatdispatch2)	 Tricky (illegal) static dispatch
 =====================================================================
-You got a score of 5 out of 74.
+You got a score of 7 out of 74.
 
 Submit code: 
-PA3-5:bf12f0550298c83dcc9362e4da69894b
+PA3-7:b1204866c88470dd217448cf352c8a73
 

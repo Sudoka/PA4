@@ -116,29 +116,79 @@ void ClassTable::semant_class(class__class* class_) {
     m_symtable.enterscope();
     Features features = class_->getFeatures();
     for ( int i = features->first(); features->more(i); i = features->next(i) ) {
-        semant_feature(class_, features->nth(i));
+        Feature feature = features->nth(i);
+        if ( feature->getType() == AttrType ) {
+            semant_attr(class_, feature);
+        }
+    }
+    for ( int i = features->first(); features->more(i); i = features->next(i) ) {
+        Feature feature = features->nth(i);
+        if ( feature->getType() == MethodType ) {
+            semant_method(class_, feature);
+        }
     }
     m_symtable.exitscope();
 }
 
-void ClassTable::semant_feature(class__class* class_, Feature feature) {
-    if ( feature->getType() == AttrType ) {
-        attr_class* attr = static_cast<attr_class*>(feature);
-        if ( m_symtable.probe(attr->getName()) != NULL ) {
-            ostream& os = semant_error(class_);
-            os << "Attribute " << attr->getName() << " is multiply defined in class." << endl;
-        }
-        SymData* symdata = new SymData(AttrType, class_->getName(), NULL);
-        m_symtable.addid(attr->getName(), symdata);
+void ClassTable::semant_attr(class__class* class_, Feature feature) {
+    attr_class* attr = static_cast<attr_class*>(feature);
+    Symbol attrname = attr->getName();
+    if ( m_symtable.probe(attrname) != NULL ) {
+        ostream& os = semant_error(class_);
+        os << "Attribute " << attrname << " is multiply defined in class." << endl;
     }
-    else {
-        method_class* method = static_cast<method_class*>(feature);
-        if ( m_symtable.probe(method->getName()) != NULL ) {
-            ostream& os = semant_error(class_);
-            os << "Method" << method->getName() << " is multiply defined." << endl;
-        }
-        SymData* symdata = new SymData(MethodType, class_->getName(), NULL);
-        m_symtable.addid(method->getName(), symdata);
+
+    Symbol declaretype = attr->getDeclareType();
+    if ( m_symtable.lookup(declaretype) == NULL ) {
+        ostream& os = semant_error(class_);
+        os << "Class " << declaretype << " of attribute " << attrname << " is undefined." << endl;
+    }
+
+    SymData* symdata = new SymData(AttrType, class_->getName(), NULL);
+    m_symtable.addid(attr->getName(), symdata);
+}
+
+void ClassTable::semant_method(class__class* class_, Feature feature) {
+    method_class* method = static_cast<method_class*>(feature);
+    Symbol methodname = method->getName();
+    if ( m_symtable.probe(methodname) != NULL ) {
+        ostream& os = semant_error(class_);
+        os << "Method" << methodname << " is multiply defined." << endl;
+    }
+
+    Symbol returntype = method->getReturnType();
+    if ( m_symtable.lookup(returntype) == NULL ) {
+        ostream& os = semant_error(class_);
+        os << "Undefined return type " << returntype << " in method " << methodname << "." << endl;
+    }
+
+    SymData* symdata = new SymData(MethodType, class_->getName(), NULL);
+    m_symtable.addid(method->getName(), symdata);
+
+    Formals formals = method->getFormals();
+    m_symtable.enterscope();
+    for ( int i = formals->first(); formals->more(i); i = formals->next(i) ) {
+        semant_formal(class_, static_cast<formal_class*>(formals->nth(i)));
+    }
+
+    // expr here
+
+    m_symtable.exitscope();
+}
+
+void ClassTable::semant_formal(class__class* class_, formal_class* formal) {
+    Symbol formalname = formal->getName();
+    if ( m_symtable.probe(formalname) != NULL ) {
+        ostream& os = semant_error(class_);
+        os << "Formal parameter " << formalname << " is multipley defined." << endl;
+    }
+    SymData* symdata = new SymData(FormalType, class_->getName(), NULL);
+    m_symtable.addid(formalname, symdata);
+
+    Symbol declaretype = formal->getDeclareType();
+    if ( m_symtable.lookup(declaretype) == NULL ) {
+        ostream& os = semant_error(class_);
+        os << "Class " << declaretype <<  " of formal parameter " << formalname << " is undefined." << endl;
     }
 }
 
@@ -178,7 +228,6 @@ void ClassTable::install_basic_classes() {
 
     SymData* symdata = new SymData(ClassType, Object, NULL);
     m_symtable.addid(Object, symdata);
-    semant_class(static_cast<class__class*>(Object_class));
 
     // 
     // The IO class inherits from Object. Its methods are
@@ -203,7 +252,6 @@ void ClassTable::install_basic_classes() {
 
     symdata = new SymData(ClassType, IO, NULL);
     m_symtable.addid(IO, symdata);
-    semant_class(static_cast<class__class*>(IO_class));
 
     //
     // The Int class has no methods and only a single attribute, the
@@ -217,7 +265,6 @@ void ClassTable::install_basic_classes() {
 
     symdata = new SymData(ClassType, Int, NULL);
     m_symtable.addid(Int, symdata);
-    semant_class(static_cast<class__class*>(Int_class));
 
     //
     // Bool also has only the "val" slot.
@@ -227,7 +274,6 @@ void ClassTable::install_basic_classes() {
 
     symdata = new SymData(ClassType, Bool, NULL);
     m_symtable.addid(Bool, symdata);
-    semant_class(static_cast<class__class*>(Bool_class));
 
     //
     // The class Str has a number of slots and operations:
@@ -260,6 +306,20 @@ void ClassTable::install_basic_classes() {
 
     symdata = new SymData(ClassType, Str, NULL);
     m_symtable.addid(Str, symdata);
+
+    // prim_slot
+    symdata = new SymData(ClassType, prim_slot, NULL);
+    m_symtable.addid(prim_slot, symdata);
+
+    // FIXME: self type
+    symdata = new SymData(ClassType, SELF_TYPE, NULL);
+    m_symtable.addid(SELF_TYPE, symdata);
+
+    // start to semant class content after all class names are defined
+    semant_class(static_cast<class__class*>(Object_class));
+    semant_class(static_cast<class__class*>(IO_class));
+    semant_class(static_cast<class__class*>(Int_class));
+    semant_class(static_cast<class__class*>(Bool_class));
     semant_class(static_cast<class__class*>(Str_class));
 }
 
