@@ -48,7 +48,7 @@ public:
   void semant_attr(class__class* class_, Feature feature);
   void semant_method(class__class* class_, Feature feature);
   void semant_formal(class__class* class_, formal_class* formal);
-//  void semant_expression(class__class* class_, Expression expr) = 0;
+  void semant_expression(class__class* class_, Expression expr);
 };
 
 

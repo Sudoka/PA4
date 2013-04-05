@@ -14,10 +14,20 @@
 
 enum TreeType {
     ClassType,
-    FeatureType,
+    // Feature
     MethodType,
     AttrType,
+    // Formal
     FormalType,
+    // Expression
+    ExpressionType,
+    AssignType,
+    StaticDispatchType,
+    DispatchType,
+    CondType,
+    BlockType,
+    LetType,
+    ObjectType,
     NoType
 };
 
@@ -86,7 +96,8 @@ typedef class Expression_class *Expression;
 
 class Expression_class : public tree_node {
 public:
-   tree_node *copy()		 { return copy_Expression(); }
+   tree_node *copy()		            { return copy_Expression(); }
+   virtual TreeType getType() const = 0;
    virtual Expression copy_Expression() = 0;
 
 #ifdef Expression_EXTRAS
@@ -304,6 +315,9 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return AssignType; }
+   Symbol getName() const           { return name; }
+   Expression getExpression() const { return expr; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -330,6 +344,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return StaticDispatchType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -354,6 +369,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return DispatchType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -378,6 +394,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return CondType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -400,6 +417,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -422,6 +440,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -442,6 +461,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const             { return BlockType; }
+   Expressions getExpressions() const   { return body; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -468,6 +489,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return LetType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -490,6 +512,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -512,6 +535,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -534,6 +558,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -556,6 +581,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -576,6 +602,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -598,6 +625,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -620,6 +648,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -642,6 +671,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -662,6 +692,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -682,6 +713,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -702,6 +734,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -722,6 +755,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -742,6 +776,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -762,6 +797,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -780,6 +816,7 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ExpressionType; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -800,6 +837,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
+   TreeType getType() const         { return ObjectType; }
+   Symbol getName() const           { return name; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS

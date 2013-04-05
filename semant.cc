@@ -172,6 +172,8 @@ void ClassTable::semant_method(class__class* class_, Feature feature) {
     }
 
     // expr here
+    Expression expr = method->getExpression();
+    semant_expression(class_, expr);
 
     m_symtable.exitscope();
 }
@@ -190,6 +192,47 @@ void ClassTable::semant_formal(class__class* class_, formal_class* formal) {
         ostream& os = semant_error(class_);
         os << "Class " << declaretype <<  " of formal parameter " << formalname << " is undefined." << endl;
     }
+}
+
+void ClassTable::semant_expression(class__class* class_, Expression expr) {
+    TreeType type = expr->getType();
+    switch (type) {
+        case AssignType:
+            {
+                assign_class* assign = static_cast<assign_class*>(expr);
+                Symbol name = assign->getName();
+                if ( m_symtable.lookup(name) == NULL ) {
+                    ostream& os = semant_error(class_);
+                    os << "Assignment to undeclared variable " << name << "." << endl;
+                }
+                semant_expression(class_, assign->getExpression());
+            }
+            break;
+        case BlockType:
+            {
+                Expressions exprs = static_cast<block_class*>(expr)->getExpressions();
+                for ( int i = exprs->first(); exprs->more(i); i = exprs->next(i) ) {
+                    semant_expression(class_, exprs->nth(i));
+                }
+            }
+            break;
+        case ObjectType:
+            {
+                object_class* object = static_cast<object_class*>(expr);
+                Symbol name = object->getName();
+                if ( name == self ) {
+                }
+                else if ( m_symtable.lookup(name) == NULL ) {
+                    ostream& os = semant_error(class_);
+                    os << "Undeclared identifier " << name << "." << endl;
+                }
+            }
+            break;
+        default:
+            //expr->dump(cout, 0);
+            //cout << "type: " << type << endl;
+            break;
+        }
 }
 
 void ClassTable::install_basic_classes() {
