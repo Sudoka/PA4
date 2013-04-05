@@ -39,7 +39,6 @@ submission: ..
 	-1 (methodnameclash)	 Two children define a function differently (allowed)
 	-1 (neg)	 Negation of integer values
 	-1 (newselftype)	 Using a new SELF_TYPE expression (legal)
-	-1 (nomain)	 Missing Main class
 	-1 (objectdispatchabort)	 Calling abort() method on an object
 	-1 (outofscope)	 Using a name that exists but is out of scope
 	-1 (overridingmethod3)	 Method override example with SELF_TYPE
@@ -56,8 +55,8 @@ submission: ..
 	-1 (subtypemethodreturn)	 Returning a subtype of the declared return type (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 27 out of 74.
+You got a score of 28 out of 74.
 
 Submit code: 
-PA3-27:14ae96839ad75443c2adb638f37fdbec
+PA3-28:6dde8fe02bb6e4641b0c95612707b112
 

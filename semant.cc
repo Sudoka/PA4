@@ -106,6 +106,20 @@ ClassTable::ClassTable(Classes classes)
         class__class* class_ = static_cast<class__class*>(classes->nth(i));
         semant_class(class_);
     }
+
+    SymData* class_symdata = m_class_symtable.probe(Main);
+    if ( class_symdata == NULL ) {
+        ostream& os = semant_error();
+        os << "Class Main is not defined." << endl;
+    }
+    else {
+        MySymTable symtable = class_symdata->m_class->getSymTable();
+        if ( symtable.probe(main_meth) == NULL ) {
+            ostream& os = semant_error(class_symdata->m_class);
+            os << "No 'main' method in class Main." << endl;
+        }
+    }
+
     m_class_symtable.exitscope();
 }
 
