@@ -278,12 +278,60 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
         case LetType:
             break;
         case PlusType:
+            {
+                plus_class* plus = static_cast<plus_class*>(expr);
+                Expression expr1 = plus->getExpression1();
+                semant_expression(class_, expr1);
+                Expression expr2 = plus->getExpression2();
+                semant_expression(class_, expr2);
+                if ( expr1->type != Int || expr2->type != Int || expr1->type != expr2->type ) {
+                    ostream& os = semant_error(class_);
+                    os << "non-Int arguments: " << expr1->type << " + " << expr2->type << endl;
+                }
+                expr->type = Int;
+            }
             break;
         case SubType:
+            {
+                sub_class* sub = static_cast<sub_class*>(expr);
+                Expression expr1 = sub->getExpression1();
+                semant_expression(class_, expr1);
+                Expression expr2 = sub->getExpression2();
+                semant_expression(class_, expr2);
+                if ( expr1->type != Int || expr2->type != Int || expr1->type != expr2->type ) {
+                    ostream& os = semant_error(class_);
+                    os << "non-Int arguments: " << expr1->type << " - " << expr2->type << endl;
+                }
+                expr->type = Int;
+            }
             break;
         case MulType:
+            {
+                mul_class* mul = static_cast<mul_class*>(expr);
+                Expression expr1 = mul->getExpression1();
+                semant_expression(class_, expr1);
+                Expression expr2 = mul->getExpression2();
+                semant_expression(class_, expr2);
+                if ( expr1->type != Int || expr2->type != Int || expr1->type != expr2->type ) {
+                    ostream& os = semant_error(class_);
+                    os << "non-Int arguments: " << expr1->type << " * " << expr2->type << endl;
+                }
+                expr->type = Int;
+            }
             break;
         case DivideType:
+            {
+                divide_class* divide = static_cast<divide_class*>(expr);
+                Expression expr1 = divide->getExpression1();
+                semant_expression(class_, expr1);
+                Expression expr2 = divide->getExpression2();
+                semant_expression(class_, expr2);
+                if ( expr1->type != Int || expr2->type != Int || expr1->type != expr2->type ) {
+                    ostream& os = semant_error(class_);
+                    os << "non-Int arguments: " << expr1->type << " / " << expr2->type << endl;
+                }
+                expr->type = Int;
+            }
             break;
         case NegType:
             break;

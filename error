@@ -11,7 +11,6 @@ submission: ..
 	-1 (anattributenamedself)	 An attribute named self
 	-1 (attrbadinit)	 Init attribute with undefined expression
 	-1 (attroverride)	 Attempt to override parent's attribute
-	-1 (badarith)	 Addition with non-int argument
 	-1 (baddispatch)	 Method only in child class, attempted dispatch from parent class
 	-1 (badequalitytest)	 Int compared to String
 	-1 (badequalitytest2)	 Int compared to Bool
@@ -50,7 +49,6 @@ submission: ..
 	-1 (nomain)	 Missing Main class
 	-1 (objectdispatchabort)	 Calling abort() method on an object
 	-1 (outofscope)	 Using a name that exists but is out of scope
-	-1 (overridingmethod2)	 Another method override example
 	-1 (overridingmethod3)	 Method override example with SELF_TYPE
 	-1 (overridingmethod4)	 Illegal method override - different param types
 	-1 (signaturechange)	 Method override with different number of params
@@ -60,7 +58,6 @@ submission: ..
 	-1 (selfinformalparameter)	 Self as name of a formal parameter (illegal)
 	-1 (selftypebadreturn)	 Non-conforming return type when SELF_TYPE is declared return type
 	-1 (selftypeparameterposition)	 SELF_TYPE given as a parameter type (illegal)
-	-1 (simplearith)	 Some simple arithmetic exprs
 	-1 (simplecase)	 A simple case expr
 	-1 (staticdispatch)	 Simple static dispatch
 	-1 (stringtest)	 String methods
@@ -68,8 +65,8 @@ submission: ..
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 	-1 (trickyatdispatch2)	 Tricky (illegal) static dispatch
 =====================================================================
-You got a score of 15 out of 74.
+You got a score of 18 out of 74.
 
 Submit code: 
-PA3-15:34de1649d95d8fa84bb2351ed7453094
+PA3-18:d6815c99114ca6a36fdf8298d9e2e11b
 
