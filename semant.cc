@@ -261,8 +261,39 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             }
             break;
         case CondType:
+            {
+                cond_class* cond = static_cast<cond_class*>(expr);
+                Expression pred = cond->getPred();
+                semant_expression(class_, pred);
+                if ( pred->type != Bool ) {
+                    ostream& os = semant_error(class_);
+                    os << "Predicate of 'if ' does not have type Bool." << endl;
+                }
+
+                Expression then_expr = cond->getThen();
+                semant_expression(class_, then_expr);
+
+                Expression else_expr = cond->getElse();
+                semant_expression(class_, else_expr);
+
+                expr->type = Object;
+            }
             break;
         case LoopType:
+            {
+                loop_class* loop = static_cast<loop_class*>(expr);
+                Expression pred = loop->getPred();
+                semant_expression(class_, pred);
+                if ( pred->type != Bool ) {
+                    ostream& os = semant_error(class_);
+                    os << "Loop condition does not have type Bool." << endl;
+                }
+
+                Expression body = loop->getBody();
+                semant_expression(class_, body);
+
+                expr->type = Object;
+            }
             break;
         case CaseType:
             break;
@@ -334,6 +365,18 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             }
             break;
         case NegType:
+            {
+                neg_class* neg = static_cast<neg_class*>(expr);
+                Expression negexpr = neg->getExpression();
+                semant_expression(class_, negexpr);
+                /* FIXME
+                if ( expr->type != Int ) {
+                    ostream& os = semant_error(class_);
+                    os << "Argument of 'not' has type " << expr->type << " instead of Bool." << endl;
+                }
+                */
+                expr->type = negexpr->type;
+            }
             break;
         case LtType:
             {
@@ -378,6 +421,16 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             }
             break;
         case CompType:
+            {
+                comp_class* comp = static_cast<comp_class*>(expr);
+                Expression compexpr = comp->getExpression();
+                semant_expression(class_, compexpr);
+                if ( expr->type != Bool ) {
+                    ostream& os = semant_error(class_);
+                    os << "Argument of 'not' has type " << expr->type << " instead of Bool." << endl;
+                }
+                expr->type = Bool;
+            }
             break;
         case IntType:
             expr->type = Int;

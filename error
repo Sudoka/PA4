@@ -13,8 +13,6 @@ submission: ..
 	-1 (attroverride)	 Attempt to override parent's attribute
 	-1 (baddispatch)	 Method only in child class, attempted dispatch from parent class
 	-1 (badstaticdispatch)	 Bad static dispatch
-	-1 (badwhilebody)	 While body has error
-	-1 (badwhilecond)	 While test has error
 	-1 (basic)	 Simple program with a sequence of expressions
 	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
 	-1 (cells)	 Complex program
@@ -63,8 +61,8 @@ submission: ..
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 	-1 (trickyatdispatch2)	 Tricky (illegal) static dispatch
 =====================================================================
-You got a score of 20 out of 74.
+You got a score of 22 out of 74.
 
 Submit code: 
-PA3-20:497af1a129e8b1a383b439bc6de9f673
+PA3-22:19b9729a3ca3e37f8e7a473523f718d3
 
