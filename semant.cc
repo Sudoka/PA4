@@ -92,7 +92,7 @@ ClassTable::ClassTable(Classes classes)
 
     for ( int i = classes->first(); classes->more(i); i = classes->next(i) ) {
         class__class* class_ = static_cast<class__class*>(classes->nth(i));
-        if ( m_symtable.lookup(class_->getName()) != NULL ) {
+        if ( m_symtable.probe(class_->getName()) != NULL ) {
             ostream& os = semant_error(class_);
             os << "Class" << class_->getName() << " was previously defined." << endl;
         }
@@ -108,7 +108,7 @@ ClassTable::ClassTable(Classes classes)
 }
 
 void ClassTable::semant_class(class__class* class_) {
-    if ( m_symtable.lookup(class_->getParent()) == NULL ) {
+    if ( m_symtable.probe(class_->getParent()) == NULL && class_->getName() != Object ) {
         ostream& os = semant_error(class_);
         os << "Class" << class_->getName() << " inherits from an undefined class " << class_->getParent() << "." << endl;
     }
@@ -176,6 +176,10 @@ void ClassTable::install_basic_classes() {
 			       single_Features(method(copy, nil_Formals(), SELF_TYPE, no_expr()))),
 	       filename);
 
+    SymData* symdata = new SymData(ClassType, Object, NULL);
+    m_symtable.addid(Object, symdata);
+    semant_class(static_cast<class__class*>(Object_class));
+
     // 
     // The IO class inherits from Object. Its methods are
     //        out_string(Str) : SELF_TYPE       writes a string to the output
@@ -197,6 +201,10 @@ void ClassTable::install_basic_classes() {
 			       single_Features(method(in_int, nil_Formals(), Int, no_expr()))),
 	       filename);  
 
+    symdata = new SymData(ClassType, IO, NULL);
+    m_symtable.addid(IO, symdata);
+    semant_class(static_cast<class__class*>(IO_class));
+
     //
     // The Int class has no methods and only a single attribute, the
     // "val" for the integer. 
@@ -207,11 +215,19 @@ void ClassTable::install_basic_classes() {
 	       single_Features(attr(val, prim_slot, no_expr())),
 	       filename);
 
+    symdata = new SymData(ClassType, Int, NULL);
+    m_symtable.addid(Int, symdata);
+    semant_class(static_cast<class__class*>(Int_class));
+
     //
     // Bool also has only the "val" slot.
     //
     Class_ Bool_class =
 	class_(Bool, Object, single_Features(attr(val, prim_slot, no_expr())),filename);
+
+    symdata = new SymData(ClassType, Bool, NULL);
+    m_symtable.addid(Bool, symdata);
+    semant_class(static_cast<class__class*>(Bool_class));
 
     //
     // The class Str has a number of slots and operations:
@@ -241,6 +257,10 @@ void ClassTable::install_basic_classes() {
 						      Str, 
 						      no_expr()))),
 	       filename);
+
+    symdata = new SymData(ClassType, Str, NULL);
+    m_symtable.addid(Str, symdata);
+    semant_class(static_cast<class__class*>(Str_class));
 }
 
 
