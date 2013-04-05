@@ -399,6 +399,7 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
    TreeType getType() const         { return DispatchType; }
+   Expression getExpression() const { return expr; }
    Symbol getName() const           { return name; }
    Expressions getActual() const    { return actual; }
 
