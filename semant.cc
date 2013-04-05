@@ -110,9 +110,11 @@ ClassTable::ClassTable(Classes classes)
 }
 
 void ClassTable::semant_class(class__class* class_) {
-    if ( m_class_symtable.probe(class_->getParent()) == NULL && class_->getName() != Object ) {
-        ostream& os = semant_error(class_);
-        os << "Class" << class_->getName() << " inherits from an undefined class " << class_->getParent() << "." << endl;
+    if ( class_->getName() != Object && class_->getName() != No_type ) {
+        if ( m_class_symtable.probe(class_->getParent()) == NULL ) {
+            ostream& os = semant_error(class_);
+            os << "Class" << class_->getName() << " inherits from an undefined class " << class_->getParent() << "." << endl;
+        }
     }
 
     MySymTable symtable = class_->getSymTable();
@@ -219,6 +221,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 }
                 semant_expression(class_, assign->getExpression());
                 Symbol ret_type = assign->getExpression()->type;
+                //if ( ret_type != No_type && ret_type != symdata->m_type ) {
                 if ( ret_type != symdata->m_type ) {
                     ostream& os = semant_error(class_);
                     os << "Type " << ret_type << " of assigned expression does not confrom to declared type " << symdata->m_type << " of identifier " << name << "." << endl;
@@ -231,18 +234,41 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 static_dispatch_class* dispatch = static_cast<static_dispatch_class*>(expr);
                 Expression static_expr = dispatch->getExpression();
                 semant_expression(class_, static_expr);
-                // TODO: get static_expr->type
+                Symbol class_type = static_expr->type;
 
-                Symbol dispatch_type = dispatch->getTypeName();
-                // TODO: if no name
-                SymData* class_symdata = m_class_symtable.lookup(dispatch_type);
+                SymData* class_symdata = m_class_symtable.lookup(class_type);
                 if ( class_symdata == NULL ) {
                     ostream& os = semant_error(class_);
-                    // TODO: error message
+                    // TODO
+                }
+
+                Symbol dispatch_type = dispatch->getTypeName();
+                SymData* parent_symdata = m_class_symtable.lookup(dispatch_type);
+                if ( parent_symdata == NULL ) {
+                    ostream& os = semant_error(class_);
+                    os << "Static dispatch to undefined class " << dispatch_type << endl;
+                }
+                else {
+                    if ( class_symdata != NULL ) {
+                        for ( class__class* now_class = class_symdata->m_class; ; ) {
+                            Symbol parent = now_class->getParent();
+                            if ( parent == No_class ) {
+                                ostream& os = semant_error(class_);
+                                os << "Expression type " << class_type << " does not conform to declared static dispatch type " << dispatch_type << "." << endl;
+                                break;
+                            }
+                            else if ( now_class->getParent() == dispatch_type ) {
+                                break;
+                            }
+                            else {
+                                now_class = m_class_symtable.lookup(parent)->m_class;
+                            }
+                        }
+                    }
                 }
 
                 Symbol name = dispatch->getName();
-                MySymTable symtable = class_symdata->m_class->getSymTable();
+                MySymTable symtable = parent_symdata->m_class->getSymTable();
                 SymData* symdata = symtable.lookup(name);
                 if ( symdata == NULL ) {
                     ostream& os = semant_error(class_);
@@ -292,6 +318,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 cond_class* cond = static_cast<cond_class*>(expr);
                 Expression pred = cond->getPred();
                 semant_expression(class_, pred);
+                //if ( pred->type != No_type && pred->type != Bool ) {
                 if ( pred->type != Bool ) {
                     ostream& os = semant_error(class_);
                     os << "Predicate of 'if ' does not have type Bool." << endl;
@@ -299,10 +326,13 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
 
                 Expression then_expr = cond->getThen();
                 semant_expression(class_, then_expr);
+                Symbol then_type = then_expr->type;
 
                 Expression else_expr = cond->getElse();
                 semant_expression(class_, else_expr);
+                Symbol else_type = else_expr->type;
 
+                // FIXME: find least upper bound
                 expr->type = Object;
             }
             break;
@@ -311,6 +341,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 loop_class* loop = static_cast<loop_class*>(expr);
                 Expression pred = loop->getPred();
                 semant_expression(class_, pred);
+                //if ( pred->type != No_type && pred->type != Bool ) {
                 if ( pred->type != Bool ) {
                     ostream& os = semant_error(class_);
                     os << "Loop condition does not have type Bool." << endl;
@@ -318,8 +349,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
 
                 Expression body = loop->getBody();
                 semant_expression(class_, body);
-
-                expr->type = Object;
+                expr->type = body->type;
             }
             break;
         case CaseType:
@@ -341,13 +371,16 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 if ( m_class_symtable.lookup(declaretype) == NULL ) {
                     ostream& os = semant_error(class_);
                     os << "Class " << declaretype << " of let-bound identifier " << identifier << " is undefined." << endl;
+                    expr->type = No_type;
                 }
 
                 Expression init = let->getInit();
                 semant_expression(class_, init);
+                //if ( init->type != No_type && init->type != declaretype ) {
                 if ( init->type != declaretype ) {
                     ostream& os = semant_error(class_);
                     os << "Inferred type " << init->type << " of initialization of " << identifier << " does not confrom to identifier's declared type " << declaretype << "." << endl;
+                    expr->type = No_type;
                 }
 
                 MySymTable symtable = class_->getSymTable();
@@ -501,9 +534,12 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 SymData* symdata = m_class_symtable.lookup(name);
                 if ( symdata == NULL ) {
                     ostream& os = semant_error(class_);
-                    os << "'new' used with undefined class" << name << "." << endl;
+                    os << "'new' used with undefined class " << name << "." << endl;
+                    expr->type = No_type;
                 }
-                expr->type = symdata->m_type;
+                else {
+                    expr->type = symdata->m_type;
+                }
             }
             break;
         case IsVoidType:
@@ -520,6 +556,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                     if ( symdata == NULL ) {
                         ostream& os = semant_error(class_);
                         os << "Undeclared identifier " << name << "." << endl;
+                        expr->type = No_type;
                     }
                     expr->type = symdata->m_type;
                 }
@@ -533,10 +570,10 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
 }
 
 void ClassTable::semant_dispatch(class__class* class_, Expressions actual, SymData* symdata, Symbol name, Expression expr) {
-    //Expressions actual = dispatch->getActual();
     if ( symdata != NULL && actual->len() != symdata->m_methodType.size() ) {
         ostream& os = semant_error(class_);
         os << "Method " << name << " called with wrong number of arguments." << endl;
+        expr->type = No_type;
     }
     else {
         for ( int i = actual->first(); actual->more(i) ; i = actual->next(i) ) {
@@ -544,6 +581,8 @@ void ClassTable::semant_dispatch(class__class* class_, Expressions actual, SymDa
             if ( symdata != NULL && actual->nth(i)->type != symdata->m_methodType[i] ) {
                 ostream& os = semant_error(class_);
                 os << "In call of method " << name << ", type " << actual->nth(i)->type << " of parameter " << symdata->m_methodArg[i] << " does not conform to declared type " << symdata->m_methodType[i] << "." << endl;
+                expr->type = No_type;
+                break;
             }
             else {
                 expr->type = actual->nth(i)->type;
@@ -666,6 +705,12 @@ void ClassTable::install_basic_classes() {
 
     symdata = new SymData(ClassType, static_cast<class__class*>(Str_class), Str);
     m_class_symtable.addid(Str, symdata);
+
+    // No_type
+    Class_ No_type_class =
+	class_(No_type, No_class, nil_Features(),filename);
+    symdata = new SymData(ClassType, static_cast<class__class*>(No_type_class), No_type);
+    m_class_symtable.addid(No_type, symdata);
 
     // prim_slot
     symdata = new SymData(ClassType, NULL, NULL);
