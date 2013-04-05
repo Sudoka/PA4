@@ -107,6 +107,7 @@ ClassTable::ClassTable(Classes classes)
         semant_class(class_);
     }
 
+    // FIXME: semant main first?
     SymData* class_symdata = m_class_symtable.probe(Main);
     if ( class_symdata == NULL ) {
         ostream& os = semant_error();
@@ -198,6 +199,26 @@ void ClassTable::semant_method(class__class* class_, Feature feature) {
     Expression expr = method->getExpression();
     semant_expression(class_, expr);
     // end
+
+    if ( expr->type != No_type && expr->type != returntype ) {
+        SymData* class_symdata = m_class_symtable.lookup(expr->type);
+        if ( class_symdata != NULL ) {
+            for ( class__class* now_class = class_symdata->m_class; ; ) {
+                Symbol parent = now_class->getParent();
+                if ( parent == No_class ) {
+                    ostream& os = semant_error(class_);
+                    os << "Inferred return type " << expr->type << " of method " << methodname << " does not conform to declared return type " << returntype << "." << endl;
+                    break;
+                }
+                else if ( parent == returntype ) {
+                    break;
+                }
+                else {
+                    now_class = m_class_symtable.lookup(parent)->m_class;
+                }
+            }
+        }
+    }
 
     symtable.exitscope();
     symtable.addid(method->getName(), method_data);
@@ -577,6 +598,9 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 semant_expression(class_, expr);
                 expr->type = Bool;
             }
+            break;
+        case NoExpressionType:
+            expr->type = No_type;
             break;
         case ObjectType:
             {
