@@ -9,21 +9,16 @@ make: Leaving directory `/home/yyhuang/compiler/PA4'
 submission: ..
 
 	-1 (anattributenamedself)	 An attribute named self
-	-1 (assignment)	 Valid assignments
-	-1 (assignnoconform)	 Assignment with non conforming expression
 	-1 (attrbadinit)	 Init attribute with undefined expression
 	-1 (attroverride)	 Attempt to override parent's attribute
-	-1 (badargs1)	 Non-conforming parameter type in dispatch
 	-1 (badarith)	 Addition with non-int argument
 	-1 (baddispatch)	 Method only in child class, attempted dispatch from parent class
 	-1 (badequalitytest)	 Int compared to String
 	-1 (badequalitytest2)	 Int compared to Bool
-	-1 (badmethodcallsitself)	 Method called with itself as parameter (wrong type)
 	-1 (badstaticdispatch)	 Bad static dispatch
 	-1 (badwhilebody)	 While body has error
 	-1 (badwhilecond)	 While test has error
 	-1 (basic)	 Simple program with a sequence of expressions
-	-1 (basicclassestree)	 Test of inheritance tree (Object as ansestor of everything)
 	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
 	-1 (cells)	 Complex program
 	-1 (classes)	 Various classes with inheritance and overriding (legal)
@@ -32,10 +27,8 @@ submission: ..
 	-1 (cycleinmethods)	 Methods call each other in a cycle (legal)
 	-1 (dispatch)	 Simple dispatches
 	-1 (expressionblock)	 Simple expression block (i.e. list)
-	-1 (forwardinherits)	 Forward declaration in inherits clause (legal)
 	-1 (hairyscary)	 Messy legal Cool program
 	-1 (if)	 If statement
-	-1 (inheritsObject)	 Class explicitly inherits Object (legal)
 	-1 (inheritsbool)	 Class inherits Bool (illegal)
 	-1 (inheritsselftype)	 Class inherits SELF_TYPE (illegal)
 	-1 (inheritsstring)	 Class inherits String (illegal)
@@ -56,13 +49,14 @@ submission: ..
 	-1 (newselftype)	 Using a new SELF_TYPE expression (legal)
 	-1 (nomain)	 Missing Main class
 	-1 (objectdispatchabort)	 Calling abort() method on an object
-	-1 (overridingmethod)	 Overriding parent class's method
+	-1 (outofscope)	 Using a name that exists but is out of scope
 	-1 (overridingmethod2)	 Another method override example
 	-1 (overridingmethod3)	 Method override example with SELF_TYPE
-	-1 (overriderenamearg)	 Overriding parent's method with new param names (legal)
 	-1 (overridingmethod4)	 Illegal method override - different param types
 	-1 (signaturechange)	 Method override with different number of params
+	-1 (returntypenoexist)	 Undefined return type
 	-1 (scopes)	 Scope test (legal)
+	-1 (self-assignment)	 Assignment to self (illegal)
 	-1 (selfinformalparameter)	 Self as name of a formal parameter (illegal)
 	-1 (selftypebadreturn)	 Non-conforming return type when SELF_TYPE is declared return type
 	-1 (selftypeparameterposition)	 SELF_TYPE given as a parameter type (illegal)
@@ -74,8 +68,8 @@ submission: ..
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 	-1 (trickyatdispatch2)	 Tricky (illegal) static dispatch
 =====================================================================
-You got a score of 9 out of 74.
+You got a score of 15 out of 74.
 
 Submit code: 
-PA3-9:23f55a2de7cf6f09d392f7b039e15952
+PA3-15:34de1649d95d8fa84bb2351ed7453094
 

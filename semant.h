@@ -49,6 +49,7 @@ public:
   void semant_class(class__class* class_);
   void semant_attr(class__class* class_, Feature feature);
   void semant_method(class__class* class_, Feature feature);
+  //void semant_method_expr(class__class* class_, Expression expr);
   void semant_formal(class__class* class_, SymData* method_data, formal_class* formal);
   void semant_expression(class__class* class_, Expression expr);
   void semant_dispatch(class__class* class_, Symbol classname, Symbol name, Expressions actual);

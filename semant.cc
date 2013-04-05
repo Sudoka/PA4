@@ -148,6 +148,8 @@ void ClassTable::semant_attr(class__class* class_, Feature feature) {
         os << "Class " << declaretype << " of attribute " << attrname << " is undefined." << endl;
     }
 
+    semant_expression(class_, attr->getExpression());
+
     SymData* symdata = new SymData(AttrType, class_, declaretype);
     symtable.addid(attr->getName(), symdata);
 }
@@ -175,13 +177,20 @@ void ClassTable::semant_method(class__class* class_, Feature feature) {
         semant_formal(class_, method_data, static_cast<formal_class*>(formals->nth(i)));
     }
 
-    // expr here
+    //semant_method_expr();
     Expression expr = method->getExpression();
     semant_expression(class_, expr);
-    symtable.exitscope();
+    // end
 
     symtable.addid(method->getName(), method_data);
+    symtable.exitscope();
 }
+
+/*
+void ClassTable::semant_method_expr(class__class* class_, Feature feature) {
+    // expr here
+}
+*/
 
 void ClassTable::semant_formal(class__class* class_, SymData* method_data, formal_class* formal) {
     Symbol formalname = formal->getName();
@@ -209,11 +218,18 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 assign_class* assign = static_cast<assign_class*>(expr);
                 Symbol name = assign->getName();
                 MySymTable symtable = class_->getSymTable();
-                if ( symtable.lookup(name) == NULL ) {
+                SymData* symdata = symtable.lookup(name);
+                if ( symdata == NULL ) {
                     ostream& os = semant_error(class_);
                     os << "Assignment to undeclared variable " << name << "." << endl;
                 }
                 semant_expression(class_, assign->getExpression());
+                Symbol ret_type = assign->getExpression()->type;
+                if ( ret_type != symdata->m_type ) {
+                    ostream& os = semant_error(class_);
+                    os << "Type " << ret_type << " of assigned expression does not confrom to declared type " << symdata->m_type << " of identifier " << name << "." << endl;
+                }
+                expr->type = ret_type;
             }
             break;
         case StaticDispatchType:
@@ -234,45 +250,88 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
         case DispatchType:
             {
                 dispatch_class* dispatch = static_cast<dispatch_class*>(expr);
-                /*
                 Symbol name = dispatch->getName();
-                SymData* symdata = m_class_symtable.probe(name);
+                MySymTable symtable = class_->getSymTable();
+                SymData* symdata = symtable.lookup(name);
                 if ( symdata == NULL ) {
                     ostream& os = semant_error(class_);
                     os << "Dispatch to undefined method " << name << "." << endl;
                 }
-                */
                 semant_dispatch(class_, NULL, dispatch->getName(), dispatch->getActual());
             }
+            break;
+        case CondType:
+            break;
+        case LoopType:
+            break;
+        case CaseType:
             break;
         case BlockType:
             {
                 Expressions exprs = static_cast<block_class*>(expr)->getExpressions();
                 for ( int i = exprs->first(); exprs->more(i); i = exprs->next(i) ) {
                     semant_expression(class_, exprs->nth(i));
+                    expr->type = exprs->nth(i)->type;
                 }
             }
+            break;
+        case LetType:
+            break;
+        case PlusType:
+            break;
+        case SubType:
+            break;
+        case MulType:
+            break;
+        case DivideType:
+            break;
+        case NegType:
+            break;
+        case LtType:
+            break;
+        case EqType:
+            break;
+        case LeqType:
+            break;
+        case CompType:
+            break;
+        case IntType:
+            expr->type = Int;
+            break;
+        case BoolType:
+            expr->type = Bool;
+            break;
+        case StringType:
+            expr->type = Str;
             break;
         case NewType:
             {
                 new__class* newclass = static_cast<new__class*>(expr);
                 Symbol name = newclass->getTypeName();
-                if ( m_class_symtable.lookup(name) == NULL ) {
+                SymData* symdata = m_class_symtable.lookup(name);
+                if ( symdata == NULL ) {
                     ostream& os = semant_error(class_);
                     os << "'new' used with undefined class" << name << "." << endl;
                 }
+                expr->type = symdata->m_type;
             }
+            break;
+        case IsVoidType:
             break;
         case ObjectType:
             {
                 object_class* object = static_cast<object_class*>(expr);
-                Symbol name = object->getName();
+                Symbol name = object->getSymbol();
                 MySymTable symtable = class_->getSymTable();
                 if ( name == self ) {
                 }
-                else if ( symtable.lookup(name) == NULL ) {
-                    ostream& os = semant_error(class_);
-                    os << "Undeclared identifier " << name << "." << endl;
+                else {
+                    SymData* symdata = symtable.lookup(name);
+                    if ( symdata == NULL ) {
+                        ostream& os = semant_error(class_);
+                        os << "Undeclared identifier " << name << "." << endl;
+                    }
+                    expr->type = symdata->m_type;
                 }
             }
             break;
