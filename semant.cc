@@ -307,6 +307,32 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             }
             break;
         case LetType:
+            {
+                let_class* let = static_cast<let_class*>(expr);
+                Symbol identifier = let->getIdentifier();
+                Symbol declaretype = let->getDeclareType();
+                if ( m_class_symtable.lookup(declaretype) == NULL ) {
+                    ostream& os = semant_error(class_);
+                    os << "Class " << declaretype << " of let-bound identifier " << identifier << " is undefined." << endl;
+                }
+
+                Expression init = let->getInit();
+                semant_expression(class_, init);
+                if ( init->type != declaretype ) {
+                    ostream& os = semant_error(class_);
+                    os << "Inferred type " << init->type << " of initialization of " << identifier << " does not confrom to identifier's declared type " << declaretype << "." << endl;
+                }
+
+                MySymTable symtable = class_->getSymTable();
+                symtable.enterscope();
+                SymData* symdata = new SymData(LetType, class_, declaretype);
+                symtable.addid(identifier, symdata);
+                Expression body = let->getBody();
+                semant_expression(class_, body);
+                symtable.exitscope();
+
+                expr->type = declaretype;
+            }
             break;
         case PlusType:
             {

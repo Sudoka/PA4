@@ -11,7 +11,6 @@ submission: ..
 	-1 (anattributenamedself)	 An attribute named self
 	-1 (attrbadinit)	 Init attribute with undefined expression
 	-1 (attroverride)	 Attempt to override parent's attribute
-	-1 (baddispatch)	 Method only in child class, attempted dispatch from parent class
 	-1 (badstaticdispatch)	 Bad static dispatch
 	-1 (basic)	 Simple program with a sequence of expressions
 	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
@@ -30,12 +29,10 @@ submission: ..
 	-1 (initwithself)	 Attribute initialized with self (legal)
 	-1 (io)	 IO methods
 	-1 (isvoid)	 isvoid expressions
-	-1 (letinit)	 Let with initialization (legal)
 	-1 (letnoinit)	 Let without initialization (legal)
 	-1 (letself)	 Let with self in binding (illegal)
 	-1 (letselftype)	 Let with SELF_TYPE variables (legal)
 	-1 (letshadows)	 Let with a variable shadowing one in an outer scope
-	-1 (letbadinit)	 Let initization with nonconforming type
 	-1 (list)	 List program
 	-1 (lubtest)	 LUB test using if statements
 	-1 (methodcallsitself)	 Method calls itself legally
@@ -61,8 +58,8 @@ submission: ..
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 	-1 (trickyatdispatch2)	 Tricky (illegal) static dispatch
 =====================================================================
-You got a score of 22 out of 74.
+You got a score of 25 out of 74.
 
 Submit code: 
-PA3-22:19b9729a3ca3e37f8e7a473523f718d3
+PA3-25:9ea902a10ff499b9aafb29c12f045595
 
