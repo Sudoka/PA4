@@ -18,7 +18,7 @@ enum TreeType {
     MethodType,
     AttrType,
     FormalType,
-    DefaultType
+    NoType
 };
 
 

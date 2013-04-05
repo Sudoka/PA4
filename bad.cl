@@ -1,7 +1,7 @@
 class C inherits B {
 	a : Int;
 	b : Bool;
-	init(x : Int, y : Bool) : C {
+	init(x : Int, y : Bool, C : Int) : C {
            {
 		a <- x;
 		b <- y;
