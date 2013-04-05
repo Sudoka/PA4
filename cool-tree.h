@@ -11,6 +11,9 @@
 
 #include "tree.h"
 #include "cool-tree.handcode.h"
+#include "symtab.h"
+
+class SymData;
 
 enum TreeType {
     ClassType,
@@ -27,6 +30,7 @@ enum TreeType {
     CondType,
     BlockType,
     LetType,
+    NewType,
     ObjectType,
     NoType
 };
@@ -174,6 +178,7 @@ protected:
    Symbol parent;
    Features features;
    Symbol filename;
+   SymbolTable<Symbol, SymData> m_symtable;
 public:
    class__class(Symbol a1, Symbol a2, Features a3, Symbol a4) {
       name = a1;
@@ -183,9 +188,10 @@ public:
    }
    Class_ copy_Class_();
    void dump(ostream& stream, int n);
-   Symbol getName() const       { return name; }
-   Symbol getParent() const     { return parent; }
-   Features getFeatures() const { return features; }
+   Symbol getName() const                       { return name; }
+   Symbol getParent() const                     { return parent; }
+   Features getFeatures() const                 { return features; }
+   SymbolTable<Symbol, SymData>& getSymTable()  { return m_symtable; }
 
 #ifdef Class__SHARED_EXTRAS
    Class__SHARED_EXTRAS
@@ -345,6 +351,10 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
    TreeType getType() const         { return StaticDispatchType; }
+   Expression getExpression() const { return expr; }
+   Symbol getTypeName() const       { return type_name; }
+   Symbol getName() const           { return name; }
+   Expressions getActual() const    { return actual; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -370,6 +380,8 @@ public:
    Expression copy_Expression();
    void dump(ostream& stream, int n);
    TreeType getType() const         { return DispatchType; }
+   Symbol getName() const           { return name; }
+   Expressions getActual() const    { return actual; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS
@@ -776,7 +788,8 @@ public:
    }
    Expression copy_Expression();
    void dump(ostream& stream, int n);
-   TreeType getType() const         { return ExpressionType; }
+   TreeType getType() const         { return NewType; }
+   Symbol getTypeName() const       { return type_name; }
 
 #ifdef Expression_SHARED_EXTRAS
    Expression_SHARED_EXTRAS

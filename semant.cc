@@ -81,39 +81,42 @@ static void initialize_constants(void)
     val         = idtable.add_string("_val");
 }
 
+typedef SymbolTable<Symbol, SymData>& MySymTable;
+
 /* create symbol table */
 
 ClassTable::ClassTable(Classes classes)
 : semant_errors(0) , error_stream(cerr) {
-    m_symtable.enterscope();
+    m_class_symtable.enterscope();
 
     /* Fill this in */
     install_basic_classes();
 
     for ( int i = classes->first(); classes->more(i); i = classes->next(i) ) {
         class__class* class_ = static_cast<class__class*>(classes->nth(i));
-        if ( m_symtable.probe(class_->getName()) != NULL ) {
+        if ( m_class_symtable.probe(class_->getName()) != NULL ) {
             ostream& os = semant_error(class_);
             os << "Class" << class_->getName() << " was previously defined." << endl;
         }
-        SymData* symdata = new SymData(ClassType, class_->getName(), NULL);
-        m_symtable.addid(class_->getName(), symdata);
+        SymData* symdata = new SymData(ClassType, class_, class_->getName());
+        m_class_symtable.addid(class_->getName(), symdata);
     }
 
     for ( int i = classes->first(); classes->more(i); i = classes->next(i) ) {
         class__class* class_ = static_cast<class__class*>(classes->nth(i));
         semant_class(class_);
     }
-    m_symtable.exitscope();
+    m_class_symtable.exitscope();
 }
 
 void ClassTable::semant_class(class__class* class_) {
-    if ( m_symtable.probe(class_->getParent()) == NULL && class_->getName() != Object ) {
+    if ( m_class_symtable.probe(class_->getParent()) == NULL && class_->getName() != Object ) {
         ostream& os = semant_error(class_);
         os << "Class" << class_->getName() << " inherits from an undefined class " << class_->getParent() << "." << endl;
     }
 
-    m_symtable.enterscope();
+    MySymTable symtable = class_->getSymTable();
+    symtable.enterscope();
     Features features = class_->getFeatures();
     for ( int i = features->first(); features->more(i); i = features->next(i) ) {
         Feature feature = features->nth(i);
@@ -127,71 +130,75 @@ void ClassTable::semant_class(class__class* class_) {
             semant_method(class_, feature);
         }
     }
-    m_symtable.exitscope();
+    symtable.exitscope();
 }
 
 void ClassTable::semant_attr(class__class* class_, Feature feature) {
     attr_class* attr = static_cast<attr_class*>(feature);
     Symbol attrname = attr->getName();
-    if ( m_symtable.probe(attrname) != NULL ) {
+    MySymTable symtable = class_->getSymTable();
+    if ( symtable.probe(attrname) != NULL ) {
         ostream& os = semant_error(class_);
         os << "Attribute " << attrname << " is multiply defined in class." << endl;
     }
 
     Symbol declaretype = attr->getDeclareType();
-    if ( m_symtable.lookup(declaretype) == NULL ) {
+    if ( m_class_symtable.lookup(declaretype) == NULL ) {
         ostream& os = semant_error(class_);
         os << "Class " << declaretype << " of attribute " << attrname << " is undefined." << endl;
     }
 
-    SymData* symdata = new SymData(AttrType, class_->getName(), NULL);
-    m_symtable.addid(attr->getName(), symdata);
+    SymData* symdata = new SymData(AttrType, class_, declaretype);
+    symtable.addid(attr->getName(), symdata);
 }
 
 void ClassTable::semant_method(class__class* class_, Feature feature) {
     method_class* method = static_cast<method_class*>(feature);
     Symbol methodname = method->getName();
-    if ( m_symtable.probe(methodname) != NULL ) {
+    MySymTable symtable = class_->getSymTable();
+    if ( symtable.probe(methodname) != NULL ) {
         ostream& os = semant_error(class_);
         os << "Method" << methodname << " is multiply defined." << endl;
     }
 
     Symbol returntype = method->getReturnType();
-    if ( m_symtable.lookup(returntype) == NULL ) {
+    if ( m_class_symtable.lookup(returntype) == NULL ) {
         ostream& os = semant_error(class_);
         os << "Undefined return type " << returntype << " in method " << methodname << "." << endl;
     }
 
-    SymData* symdata = new SymData(MethodType, class_->getName(), NULL);
-    m_symtable.addid(method->getName(), symdata);
+    SymData* method_data = new SymData(MethodType, class_, returntype);
 
+    symtable.enterscope();
     Formals formals = method->getFormals();
-    m_symtable.enterscope();
     for ( int i = formals->first(); formals->more(i); i = formals->next(i) ) {
-        semant_formal(class_, static_cast<formal_class*>(formals->nth(i)));
+        semant_formal(class_, method_data, static_cast<formal_class*>(formals->nth(i)));
     }
 
     // expr here
     Expression expr = method->getExpression();
     semant_expression(class_, expr);
+    symtable.exitscope();
 
-    m_symtable.exitscope();
+    symtable.addid(method->getName(), method_data);
 }
 
-void ClassTable::semant_formal(class__class* class_, formal_class* formal) {
+void ClassTable::semant_formal(class__class* class_, SymData* method_data, formal_class* formal) {
     Symbol formalname = formal->getName();
-    if ( m_symtable.probe(formalname) != NULL ) {
+    MySymTable symtable = class_->getSymTable();
+    if ( symtable.probe(formalname) != NULL ) {
         ostream& os = semant_error(class_);
         os << "Formal parameter " << formalname << " is multipley defined." << endl;
     }
-    SymData* symdata = new SymData(FormalType, class_->getName(), NULL);
-    m_symtable.addid(formalname, symdata);
 
     Symbol declaretype = formal->getDeclareType();
-    if ( m_symtable.lookup(declaretype) == NULL ) {
+    if ( m_class_symtable.lookup(declaretype) == NULL ) {
         ostream& os = semant_error(class_);
         os << "Class " << declaretype <<  " of formal parameter " << formalname << " is undefined." << endl;
     }
+    SymData* symdata = new SymData(FormalType, class_, declaretype);
+    symtable.addid(formalname, symdata);
+    method_data->m_methodType.push_back(declaretype);
 }
 
 void ClassTable::semant_expression(class__class* class_, Expression expr) {
@@ -201,11 +208,41 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             {
                 assign_class* assign = static_cast<assign_class*>(expr);
                 Symbol name = assign->getName();
-                if ( m_symtable.lookup(name) == NULL ) {
+                MySymTable symtable = class_->getSymTable();
+                if ( symtable.lookup(name) == NULL ) {
                     ostream& os = semant_error(class_);
                     os << "Assignment to undeclared variable " << name << "." << endl;
                 }
                 semant_expression(class_, assign->getExpression());
+            }
+            break;
+        case StaticDispatchType:
+            {
+                static_dispatch_class* dispatch = static_cast<static_dispatch_class*>(expr);
+                semant_expression(class_, dispatch->getExpression());
+
+                Symbol name = dispatch->getTypeName();
+                if ( m_class_symtable.lookup(name) == NULL ) {
+                    ostream& os = semant_error(class_);
+                    // FIXME
+                    //os << "'new' used with undefined class" << name << "." << endl;
+                }
+
+                semant_dispatch(class_, name, dispatch->getName(), dispatch->getActual());
+            }
+            break;
+        case DispatchType:
+            {
+                dispatch_class* dispatch = static_cast<dispatch_class*>(expr);
+                /*
+                Symbol name = dispatch->getName();
+                SymData* symdata = m_class_symtable.probe(name);
+                if ( symdata == NULL ) {
+                    ostream& os = semant_error(class_);
+                    os << "Dispatch to undefined method " << name << "." << endl;
+                }
+                */
+                semant_dispatch(class_, NULL, dispatch->getName(), dispatch->getActual());
             }
             break;
         case BlockType:
@@ -216,13 +253,24 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 }
             }
             break;
+        case NewType:
+            {
+                new__class* newclass = static_cast<new__class*>(expr);
+                Symbol name = newclass->getTypeName();
+                if ( m_class_symtable.lookup(name) == NULL ) {
+                    ostream& os = semant_error(class_);
+                    os << "'new' used with undefined class" << name << "." << endl;
+                }
+            }
+            break;
         case ObjectType:
             {
                 object_class* object = static_cast<object_class*>(expr);
                 Symbol name = object->getName();
+                MySymTable symtable = class_->getSymTable();
                 if ( name == self ) {
                 }
-                else if ( m_symtable.lookup(name) == NULL ) {
+                else if ( symtable.lookup(name) == NULL ) {
                     ostream& os = semant_error(class_);
                     os << "Undeclared identifier " << name << "." << endl;
                 }
@@ -233,6 +281,30 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             //cout << "type: " << type << endl;
             break;
         }
+}
+
+void ClassTable::semant_dispatch(class__class* class_, Symbol classname, Symbol name, Expressions actual) {
+    /*
+    SymData* symdata = m_class_symtable.lookup(name);
+    if ( symdata == NULL ) {
+        ostream& os = semant_error(class_);
+        os << "Dispatch to undefined method " << name << "." << endl;
+    }
+    else {
+        // type handling
+    }
+    */
+
+    /*
+    if ( static_cast<int>(method_data->m_methodType.size()) != actual->len() ) {
+        ostream& os = semant_error(class_);
+        os << "Method " << name << "called with wrong number of arguments." << endl;
+    }
+    */
+
+    for ( int i = actual->first(); actual->more(i); i = actual->next(i) ) {
+        semant_expression(class_, actual->nth(i));
+    }
 }
 
 void ClassTable::install_basic_classes() {
@@ -269,8 +341,8 @@ void ClassTable::install_basic_classes() {
 			       single_Features(method(copy, nil_Formals(), SELF_TYPE, no_expr()))),
 	       filename);
 
-    SymData* symdata = new SymData(ClassType, Object, NULL);
-    m_symtable.addid(Object, symdata);
+    SymData* symdata = new SymData(ClassType, static_cast<class__class*>(Object_class), Object);
+    m_class_symtable.addid(Object, symdata);
 
     // 
     // The IO class inherits from Object. Its methods are
@@ -293,8 +365,8 @@ void ClassTable::install_basic_classes() {
 			       single_Features(method(in_int, nil_Formals(), Int, no_expr()))),
 	       filename);  
 
-    symdata = new SymData(ClassType, IO, NULL);
-    m_symtable.addid(IO, symdata);
+    symdata = new SymData(ClassType, static_cast<class__class*>(IO_class), IO);
+    m_class_symtable.addid(IO, symdata);
 
     //
     // The Int class has no methods and only a single attribute, the
@@ -306,8 +378,8 @@ void ClassTable::install_basic_classes() {
 	       single_Features(attr(val, prim_slot, no_expr())),
 	       filename);
 
-    symdata = new SymData(ClassType, Int, NULL);
-    m_symtable.addid(Int, symdata);
+    symdata = new SymData(ClassType, static_cast<class__class*>(Int_class), Int);
+    m_class_symtable.addid(Int, symdata);
 
     //
     // Bool also has only the "val" slot.
@@ -315,8 +387,8 @@ void ClassTable::install_basic_classes() {
     Class_ Bool_class =
 	class_(Bool, Object, single_Features(attr(val, prim_slot, no_expr())),filename);
 
-    symdata = new SymData(ClassType, Bool, NULL);
-    m_symtable.addid(Bool, symdata);
+    symdata = new SymData(ClassType, static_cast<class__class*>(Bool_class), Bool);
+    m_class_symtable.addid(Bool, symdata);
 
     //
     // The class Str has a number of slots and operations:
@@ -347,16 +419,16 @@ void ClassTable::install_basic_classes() {
 						      no_expr()))),
 	       filename);
 
-    symdata = new SymData(ClassType, Str, NULL);
-    m_symtable.addid(Str, symdata);
+    symdata = new SymData(ClassType, static_cast<class__class*>(Str_class), Str);
+    m_class_symtable.addid(Str, symdata);
 
     // prim_slot
-    symdata = new SymData(ClassType, prim_slot, NULL);
-    m_symtable.addid(prim_slot, symdata);
+    symdata = new SymData(ClassType, NULL, NULL);
+    m_class_symtable.addid(prim_slot, symdata);
 
     // FIXME: self type
-    symdata = new SymData(ClassType, SELF_TYPE, NULL);
-    m_symtable.addid(SELF_TYPE, symdata);
+    symdata = new SymData(ClassType, NULL, NULL);
+    m_class_symtable.addid(SELF_TYPE, symdata);
 
     // start to semant class content after all class names are defined
     semant_class(static_cast<class__class*>(Object_class));

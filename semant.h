@@ -7,6 +7,7 @@
 #include "stringtab.h"
 #include "symtab.h"
 #include "list.h"
+#include <vector>
 
 #define TRUE 1
 #define FALSE 0
@@ -16,12 +17,13 @@ typedef ClassTable *ClassTableP;
 
 class SymData {
 public:
-    TreeType m_type;
-    Symbol m_classname;
-    Symbol m_methodname;
+    TreeType m_treetype;
+    class__class* m_class;
+    Symbol m_type;
+    std::vector<Symbol> m_methodType;
 
-    SymData(TreeType type, Symbol classname, Symbol methodname)
-    :m_type(type), m_classname(classname), m_methodname(methodname)
+    SymData(TreeType treetype, class__class* class_, Symbol type)
+    :m_treetype(treetype), m_class(class_), m_type(type)
     {}
 };
 
@@ -35,7 +37,7 @@ private:
   int semant_errors;
   void install_basic_classes();
   ostream& error_stream;
-  SymbolTable<Symbol, SymData> m_symtable;
+  SymbolTable<Symbol, SymData> m_class_symtable;
 
 public:
   ClassTable(Classes);
@@ -47,8 +49,9 @@ public:
   void semant_class(class__class* class_);
   void semant_attr(class__class* class_, Feature feature);
   void semant_method(class__class* class_, Feature feature);
-  void semant_formal(class__class* class_, formal_class* formal);
+  void semant_formal(class__class* class_, SymData* method_data, formal_class* formal);
   void semant_expression(class__class* class_, Expression expr);
+  void semant_dispatch(class__class* class_, Symbol classname, Symbol name, Expressions actual);
 };
 
 
