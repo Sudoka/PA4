@@ -23,7 +23,6 @@ enum TreeType {
     // Formal
     FormalType,
     // Expression
-    ExpressionType,
     AssignType,
     StaticDispatchType,
     DispatchType,
@@ -48,7 +47,8 @@ enum TreeType {
     IsVoidType,
     NoExpressionType,
     ObjectType,
-    NoType
+    // Branch
+    BranchType
 };
 
 

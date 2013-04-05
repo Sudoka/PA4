@@ -53,6 +53,7 @@ public:
   void semant_formal(class__class* class_, SymData* method_data, formal_class* formal);
   void semant_expression(class__class* class_, Expression expr);
   void semant_dispatch(class__class* class_, Expressions actual, SymData* symdata, Symbol name, Expression expr);
+  void semant_branch(class__class* class_, branch_class* branch, Symbol case_type);
 };
 
 

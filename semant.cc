@@ -178,7 +178,9 @@ void ClassTable::semant_method(class__class* class_, Feature feature) {
         semant_formal(class_, method_data, static_cast<formal_class*>(formals->nth(i)));
     }
 
+    // FIXME
     //semant_method_expr();
+    //define method first or we can't find method name
     Expression expr = method->getExpression();
     semant_expression(class_, expr);
     // end
@@ -257,7 +259,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                                 os << "Expression type " << class_type << " does not conform to declared static dispatch type " << dispatch_type << "." << endl;
                                 break;
                             }
-                            else if ( now_class->getParent() == dispatch_type ) {
+                            else if ( parent == dispatch_type ) {
                                 break;
                             }
                             else {
@@ -288,10 +290,9 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 SymData* class_symdata = m_class_symtable.lookup(dispatch_expr->type);
                 MySymTable symtable = class_symdata->m_class->getSymTable();
                 SymData* symdata = symtable.lookup(name);
-
                 if ( symdata == NULL ) {
                     for ( class__class* now_class = class_ ; ; ) {
-                        MySymTable symtable = now_class->getSymTable();
+                        symtable = now_class->getSymTable();
                         SymData* symdata = symtable.lookup(name);
                         if ( symdata != NULL ) {
                             break;
@@ -353,6 +354,21 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             }
             break;
         case CaseType:
+            {
+                typcase_class* typcase = static_cast<typcase_class*>(expr);
+                Expression expr = typcase->getExpression();
+                semant_expression(class_, expr);
+                Symbol case_type = expr->type;
+
+                MySymTable symtable = class_->getSymTable();
+                symtable.enterscope();
+
+                Cases cases = typcase->getCases();
+                for ( int i = cases->first(); cases->more(i); i = cases->next(i) ) {
+                    semant_branch(class_, static_cast<branch_class*>(cases->nth(i)), case_type);
+                }
+                symtable.exitscope();
+            }
             break;
         case BlockType:
             {
@@ -455,13 +471,11 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 neg_class* neg = static_cast<neg_class*>(expr);
                 Expression negexpr = neg->getExpression();
                 semant_expression(class_, negexpr);
-                /* FIXME
-                if ( expr->type != Int ) {
+                if ( negexpr->type != Int ) {
                     ostream& os = semant_error(class_);
-                    os << "Argument of 'not' has type " << expr->type << " instead of Bool." << endl;
+                    os << "Argument of '~' has type " << negexpr->type << " instead of Int." << endl;
                 }
-                */
-                expr->type = negexpr->type;
+                expr->type = Int;
             }
             break;
         case LtType:
@@ -543,6 +557,12 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             }
             break;
         case IsVoidType:
+            {
+                isvoid_class* isvoid = static_cast<isvoid_class*>(expr);
+                Expression expr = isvoid->getExpression();
+                semant_expression(class_, expr);
+                expr->type = Bool;
+            }
             break;
         case ObjectType:
             {
@@ -550,6 +570,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 Symbol name = object->getSymbol();
                 MySymTable symtable = class_->getSymTable();
                 if ( name == self ) {
+                    expr->type = class_->getName();
                 }
                 else {
                     SymData* symdata = symtable.lookup(name);
@@ -570,7 +591,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
 }
 
 void ClassTable::semant_dispatch(class__class* class_, Expressions actual, SymData* symdata, Symbol name, Expression expr) {
-    if ( symdata != NULL && actual->len() != symdata->m_methodType.size() ) {
+    if ( symdata != NULL && actual->len() != static_cast<int>(symdata->m_methodType.size()) ) {
         ostream& os = semant_error(class_);
         os << "Method " << name << " called with wrong number of arguments." << endl;
         expr->type = No_type;
@@ -586,6 +607,65 @@ void ClassTable::semant_dispatch(class__class* class_, Expressions actual, SymDa
             }
             else {
                 expr->type = actual->nth(i)->type;
+            }
+        }
+    }
+}
+
+void ClassTable::semant_branch(class__class* class_, branch_class* branch, Symbol case_type) {
+    MySymTable symtable = class_->getSymTable();
+    Symbol branch_name = branch->getName();
+    if ( symtable.probe(branch_name) != NULL ) {
+        ostream& os = semant_error(class_);
+        //
+    }
+    else {
+        Symbol branch_type = branch->getDeclareType();
+        SymData* class_symdata = m_class_symtable.lookup(branch_type);
+        if ( class_symdata == NULL ) {
+            ostream& os = semant_error(class_);
+            //
+        }
+        else {
+            for ( class__class* now_class = class_symdata->m_class; ; ) {
+                Symbol parent = now_class->getParent();
+                if ( parent == No_class ) {
+                    branch_type = No_type;
+                    ostream& os = semant_error(class_);
+                    //
+                    break;
+                }
+                else if ( parent == case_type ) {
+                    break;
+                }
+                else {
+                    now_class = m_class_symtable.lookup(parent)->m_class;
+                }
+            }
+
+            SymData* symdata = new SymData(BranchType, class_, branch_type);
+            symtable.addid(branch_name, symdata);
+
+            Expression branch_expr = branch->getExpression();
+            semant_expression(class_, branch_expr);
+            SymData* branch_symdata = m_class_symtable.lookup(branch_expr->type);
+            if ( branch_symdata == NULL ) {
+                ostream& os = semant_error(class_);
+                //
+            }
+            for ( class__class* now_class = branch_symdata->m_class; ; ) {
+                Symbol parent = now_class->getParent();
+                if ( parent == No_class ) {
+                    ostream& os = semant_error();
+                    //
+                    break;
+                }
+                else if ( branch_type == No_type || parent == branch_type ) {
+                    break;
+                }
+                else {
+                    now_class = m_class_symtable.lookup(parent)->m_class;
+                }
             }
         }
     }

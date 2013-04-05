@@ -12,7 +12,6 @@ submission: ..
 	-1 (attrbadinit)	 Init attribute with undefined expression
 	-1 (attroverride)	 Attempt to override parent's attribute
 	-1 (badmethodcallsitself)	 Method called with itself as parameter (wrong type)
-	-1 (badstaticdispatch)	 Bad static dispatch
 	-1 (basic)	 Simple program with a sequence of expressions
 	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
 	-1 (cells)	 Complex program
@@ -57,8 +56,8 @@ submission: ..
 	-1 (subtypemethodreturn)	 Returning a subtype of the declared return type (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 26 out of 74.
+You got a score of 27 out of 74.
 
 Submit code: 
-PA3-26:18f2831f458cefb4703a15b274fa0d2f
+PA3-27:14ae96839ad75443c2adb638f37fdbec
 
