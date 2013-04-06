@@ -8,7 +8,6 @@ make: Leaving directory `/home/yyhuang/compiler/PA4'
 =====================================================================
 submission: ..
 
-	-1 (anattributenamedself)	 An attribute named self
 	-1 (attrbadinit)	 Init attribute with undefined expression
 	-1 (attroverride)	 Attempt to override parent's attribute
 	-1 (basic)	 Simple program with a sequence of expressions
@@ -19,7 +18,6 @@ submission: ..
 	-1 (comparisons)	 Legal < and <= comparisons
 	-1 (dispatch)	 Simple dispatches
 	-1 (hairyscary)	 Messy legal Cool program
-	-1 (inheritsselftype)	 Class inherits SELF_TYPE (illegal)
 	-1 (io)	 IO methods
 	-1 (isvoid)	 isvoid expressions
 	-1 (letshadows)	 Let with a variable shadowing one in an outer scope
@@ -31,15 +29,12 @@ submission: ..
 	-1 (overridingmethod4)	 Illegal method override - different param types
 	-1 (signaturechange)	 Method override with different number of params
 	-1 (scopes)	 Scope test (legal)
-	-1 (self-assignment)	 Assignment to self (illegal)
-	-1 (selfinformalparameter)	 Self as name of a formal parameter (illegal)
-	-1 (selftypeparameterposition)	 SELF_TYPE given as a parameter type (illegal)
 	-1 (simplecase)	 A simple case expr
 	-1 (staticdispatch)	 Simple static dispatch
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 45 out of 74.
+You got a score of 50 out of 74.
 
 Submit code: 
-PA3-45:be9c2bf434fe59a7226aab041dee20cb
+PA3-50:7dcf72dc125bff1b6ab41e5b8a0181f4
 

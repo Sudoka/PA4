@@ -135,6 +135,10 @@ void ClassTable::semant_class(class__class* class_) {
             ostream& os = semant_error(class_);
             os << "Class " << class_->getName() << " cannot inherit class String." << endl;
         }
+        else if ( parent == SELF_TYPE ) {
+            ostream& os = semant_error(class_);
+            os << "Class " << class_->getName() << " cannot inherit class SELF_TYPE." << endl;
+        }
         else if ( m_class_symtable.probe(parent) == NULL ) {
             ostream& os = semant_error(class_);
             os << "Class " << class_->getName() << " inherits from an undefined class " << parent << "." << endl;
@@ -168,6 +172,10 @@ void ClassTable::semant_attr(class__class* class_, Feature feature) {
     attr_class* attr = static_cast<attr_class*>(feature);
     Symbol attrname = attr->getName();
     MySymTable symtable = class_->getSymTable();
+    if ( attrname == self ) {
+        ostream& os = semant_error(class_);
+        os << "'self' cannot be the name of an attribute." << endl;
+    }
     if ( symtable.probe(attrname) != NULL ) {
         ostream& os = semant_error(class_);
         os << "Attribute " << attrname << " is multiply defined in class." << endl;
@@ -249,12 +257,20 @@ void ClassTable::semant_method_expr(class__class* class_, Feature feature) {
 void ClassTable::semant_formal(class__class* class_, SymData* method_data, formal_class* formal) {
     Symbol formalname = formal->getName();
     MySymTable symtable = class_->getSymTable();
+    if ( formalname == self ) {
+        ostream& os = semant_error(class_);
+        os << "'self' cannot be the name of a formal parameter." << endl;
+    }
     if ( symtable.probe(formalname) != NULL ) {
         ostream& os = semant_error(class_);
         os << "Formal parameter " << formalname << " is multipley defined." << endl;
     }
 
     Symbol declaretype = formal->getDeclareType();
+    if ( declaretype == SELF_TYPE ) {
+        ostream& os = semant_error(class_);
+        os << "Formal parameter " << formalname << " cannot have type SELF_TYPE." << endl;
+    }
     if ( m_class_symtable.lookup(declaretype) == NULL ) {
         ostream& os = semant_error(class_);
         os << "Class " << declaretype <<  " of formal parameter " << formalname << " is undefined." << endl;
@@ -277,6 +293,11 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             {
                 assign_class* assign = static_cast<assign_class*>(expr);
                 Symbol name = assign->getName();
+                if ( name == self ) {
+                    ostream& os = semant_error(class_);
+                    os << "Cannot assign to 'self'." << endl;
+                    return;
+                }
                 MySymTable symtable = class_->getSymTable();
                 SymData* symdata = symtable.lookup(name);
                 if ( symdata == NULL ) {
