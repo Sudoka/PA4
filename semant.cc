@@ -624,9 +624,20 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 semant_expression(class_, expr1);
                 Expression expr2 = eq->getExpression2();
                 semant_expression(class_, expr2);
-                if ( expr1->type != expr2->type ) {
-                    ostream& os = semant_error(class_);
-                    os << "non-Int arguments: " << expr1->type << " = " << expr2->type << endl;
+
+                if ( expr1->type == Int || expr1->type == Bool || expr1->type == Str || expr2->type == Int || expr2->type == Bool || expr2->type == Str ) {
+                    if ( expr1->type != expr2->type ) {
+                        ostream& os = semant_error(class_);
+                        os << "non-Int arguments: " << expr1->type << " = " << expr2->type << endl;
+                    }
+                }
+                else {
+                    SymData* symdata1 = get_symdata(class_, expr1->type);
+                    SymData* symdata2 = get_symdata(class_, expr2->type);
+                    if ( symdata1->m_treetype != ClassType || symdata2->m_treetype != ClassType ) {
+                        ostream& os = semant_error(class_);
+                        os << "non-Int arguments: " << expr1->type << " = " << expr2->type << endl;
+                    }
                 }
                 expr->type = Bool;
             }
@@ -650,7 +661,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 comp_class* comp = static_cast<comp_class*>(expr);
                 Expression compexpr = comp->getExpression();
                 semant_expression(class_, compexpr);
-                if ( expr->type != Bool ) {
+                if ( expr->type != No_type && expr->type != Bool ) {
                     ostream& os = semant_error(class_);
                     os << "Argument of 'not' has type " << expr->type << " instead of Bool." << endl;
                 }

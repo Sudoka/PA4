@@ -13,8 +13,6 @@ submission: ..
 	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
 	-1 (cells)	 Complex program
 	-1 (classes)	 Various classes with inheritance and overriding (legal)
-	-1 (compare)	 Legal equality comparison
-	-1 (comparisons)	 Legal < and <= comparisons
 	-1 (dispatch)	 Simple dispatches
 	-1 (hairyscary)	 Messy legal Cool program
 	-1 (isvoid)	 isvoid expressions
@@ -26,8 +24,8 @@ submission: ..
 	-1 (scopes)	 Scope test (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 57 out of 74.
+You got a score of 59 out of 74.
 
 Submit code: 
-PA3-57:84b2ab355245f30b609206be5cae3280
+PA3-59:00d7640497fd77fca5b5feb1d96430de
 
