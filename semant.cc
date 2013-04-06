@@ -173,6 +173,12 @@ void ClassTable::semant_class_expr(class__class* class_) {
     Features features = class_->getFeatures();
     for ( int i = features->first(); features->more(i); i = features->next(i) ) {
         Feature feature = features->nth(i);
+        if ( feature->getType() == AttrType ) {
+            semant_attr_expr(class_, feature);
+        }
+    }
+    for ( int i = features->first(); features->more(i); i = features->next(i) ) {
+        Feature feature = features->nth(i);
         if ( feature->getType() == MethodType ) {
             semant_method_expr(class_, feature);
         }
@@ -198,10 +204,20 @@ void ClassTable::semant_attr(class__class* class_, Feature feature) {
         os << "Class " << declaretype << " of attribute " << attrname << " is undefined." << endl;
     }
 
-    semant_expression(class_, attr->getExpression());
-
     SymData* symdata = new SymData(AttrType, class_, declaretype);
     symtable.addid(attr->getName(), symdata);
+}
+
+void ClassTable::semant_attr_expr(class__class* class_, Feature feature) {
+    attr_class* attr = static_cast<attr_class*>(feature);
+    /*
+    Symbol declaretype = attr->getDeclareType();
+    if ( m_class_symtable.lookup(declaretype) == NULL ) {
+        ostream& os = semant_error(class_);
+        os << "Class " << declaretype << " of attribute " << attrname << " is undefined." << endl;
+    }
+    */
+    semant_expression(class_, attr->getExpression());
 }
 
 void ClassTable::semant_method(class__class* class_, Feature feature) {
@@ -257,7 +273,7 @@ void ClassTable::semant_method_expr(class__class* class_, Feature feature) {
     semant_expression(class_, expr);
 
     if ( expr->type != No_type && returntype != No_type && expr->type != returntype ) {
-        if ( !check_parent_type(class_, expr->type, returntype) ) {
+        if ( !check_type(class_, expr->type, returntype) ) {
             ostream& os = semant_error(class_);
             os << "Inferred return type " << expr->type << " of method " << methodname << " does not conform to declared return type " << returntype << "." << endl;
         }
@@ -338,7 +354,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                     os << "Static dispatch to undefined class " << dispatch_type << endl;
                 }
                 else {
-                    if ( !check_parent_type(class_, class_type, dispatch_type) ) {
+                    if ( !check_type(class_, class_type, dispatch_type) ) {
                         ostream& os = semant_error(class_);
                         os << "Expression type " << class_type << " does not conform to declared static dispatch type " << dispatch_type << "." << endl;
                         return;
@@ -502,7 +518,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 Expression init = let->getInit();
                 semant_expression(class_, init);
                 if ( init->type != No_type && init->type != declaretype ) {
-                    if ( !check_parent_type(class_, init->type, declaretype) ) {
+                    if ( !check_type(class_, init->type, declaretype) ) {
                         ostream& os = semant_error(class_);
                         os << "Inferred type " << init->type << " of initialization of " << identifier << " does not confrom to identifier's declared type " << declaretype << "." << endl;
                     }
@@ -655,7 +671,10 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 new__class* newclass = static_cast<new__class*>(expr);
                 Symbol name = newclass->getTypeName();
                 SymData* symdata = m_class_symtable.lookup(name);
-                if ( symdata == NULL ) {
+                if ( name == SELF_TYPE ) {
+                    expr->type = SELF_TYPE;
+                }
+                else if ( symdata == NULL ) {
                     ostream& os = semant_error(class_);
                     os << "'new' used with undefined class " << name << "." << endl;
                 }
@@ -708,7 +727,7 @@ void ClassTable::semant_dispatch(class__class* class_, Expressions actual, SymDa
         for ( int i = actual->first(); actual->more(i) ; i = actual->next(i) ) {
             semant_expression(class_, actual->nth(i));
             if ( symdata != NULL && actual->nth(i)->type != symdata->m_methodType[i] ) {
-                if ( !check_parent_type(class_, actual->nth(i)->type, symdata->m_methodType[i]) ) {
+                if ( !check_type(class_, actual->nth(i)->type, symdata->m_methodType[i]) ) {
                     ostream& os = semant_error(class_);
                     os << "In call of method " << name << ", type " << actual->nth(i)->type << " of parameter " << symdata->m_methodArg[i] << " does not conform to declared type " << symdata->m_methodType[i] << "." << endl;
                     break;
@@ -728,7 +747,7 @@ Symbol ClassTable::semant_branch(class__class* class_, branch_class* branch, Sym
     }
     else {
         Symbol branch_type = branch->getDeclareType();
-        if ( !check_parent_type(class_, branch_type, case_type) ) {
+        if ( !check_type(class_, branch_type, case_type) ) {
             branch_type = No_type;
             ostream& os = semant_error(class_);
             //
@@ -743,9 +762,12 @@ Symbol ClassTable::semant_branch(class__class* class_, branch_class* branch, Sym
     }
 }
 
-bool ClassTable::check_parent_type(class__class* class_, Symbol now_type, Symbol correct_type) {
+bool ClassTable::check_type(class__class* class_, Symbol now_type, Symbol correct_type) {
     SymData* class_symdata = get_symdata(class_, now_type);
     if ( class_symdata != NULL ) {
+        if ( class_symdata->m_type == correct_type ) {
+            return true;
+        }
         for ( class__class* now_class = class_symdata->m_class; ; ) {
             Symbol parent = now_class->getParent();
             if ( parent == No_class ) {
@@ -777,10 +799,10 @@ Symbol ClassTable::get_least_upper_bound(class__class* class_, Symbol type1, Sym
     if ( type1 == No_type || type2 == No_type ) {
         return No_type;
     }
-    else if ( check_parent_type(class_, type1, type2) ) {
+    else if ( check_type(class_, type1, type2) ) {
         return type2;
     }
-    else if ( check_parent_type(class_, type2, type1) ) {
+    else if ( check_type(class_, type2, type1) ) {
         return type1;
     }
     else {
@@ -791,7 +813,7 @@ Symbol ClassTable::get_least_upper_bound(class__class* class_, Symbol type1, Sym
                 if ( parent == Object ) {
                     return parent;
                 }
-                else if ( check_parent_type(class_, type2, parent) ) {
+                else if ( check_type(class_, type2, parent) ) {
                     return parent;
                 }
                 else {

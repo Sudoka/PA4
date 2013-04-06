@@ -21,15 +21,13 @@ submission: ..
 	-1 (letshadows)	 Let with a variable shadowing one in an outer scope
 	-1 (list)	 List program
 	-1 (methodnameclash)	 Two children define a function differently (allowed)
-	-1 (newselftype)	 Using a new SELF_TYPE expression (legal)
-	-1 (overridingmethod3)	 Method override example with SELF_TYPE
 	-1 (overridingmethod4)	 Illegal method override - different param types
 	-1 (signaturechange)	 Method override with different number of params
 	-1 (scopes)	 Scope test (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 55 out of 74.
+You got a score of 57 out of 74.
 
 Submit code: 
-PA3-55:b5d83e93dc1834117c5f83ad131b7006
+PA3-57:84b2ab355245f30b609206be5cae3280
 
