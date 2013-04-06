@@ -388,9 +388,30 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 MySymTable symtable = parent_symdata->m_class->getSymTable();
                 SymData* symdata = symtable.lookup(name);
                 if ( symdata == NULL ) {
-                    ostream& os = semant_error(class_);
-                    // TODO: error message
-                    return;
+                    for ( class__class* now_class = parent_symdata->m_class; ; ) {
+                        MySymTable parent_symtable = now_class->getSymTable();
+                        SymData* symdata = parent_symtable.lookup(name);
+                        if ( symdata != NULL ) {
+                            if ( symdata->m_type == SELF_TYPE ) {
+                                expr->type = static_expr->type;
+                            }
+                            else {
+                                expr->type = symdata->m_type;
+                            }
+                            break;
+                        }
+                        else {
+                            if ( now_class->getParent() != No_class ) {
+                                SymData* parent = m_class_symtable.lookup(now_class->getParent());
+                                now_class = parent->m_class;
+                            }
+                            else {
+                                ostream& os = semant_error(class_);
+                                os << "Dispatch to undefined method " << name << "." << endl;
+                                return;
+                            }
+                        }
+                    }
                 }
                 else {
                     expr->type = symdata->m_type;
@@ -418,39 +439,30 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                     symdata = symtable.lookup(name);
                 }
                 if ( symdata == NULL ) {
-                    //if ( dispatch_expr->type == SELF_TYPE ) {
-                        for ( class__class* now_class = class_ ; ; ) {
-                            MySymTable parent_symtable = now_class->getSymTable();
-                            SymData* symdata = parent_symtable.lookup(name);
-                            if ( symdata != NULL ) {
-                                if ( symdata->m_type == SELF_TYPE ) {
-                                    expr->type = dispatch_expr->type;
-                                }
-                                else {
-                                    expr->type = symdata->m_type;
-                                }
-                                break;
+                    for ( class__class* now_class = class_ ; ; ) {
+                        MySymTable parent_symtable = now_class->getSymTable();
+                        SymData* symdata = parent_symtable.lookup(name);
+                        if ( symdata != NULL ) {
+                            if ( symdata->m_type == SELF_TYPE ) {
+                                expr->type = dispatch_expr->type;
                             }
                             else {
-                                if ( now_class->getParent() != No_class ) {
-                                    SymData* parent = m_class_symtable.lookup(now_class->getParent());
-                                    now_class = parent->m_class;
-                                }
-                                else {
-                                    ostream& os = semant_error(class_);
-                                    os << "Dispatch to undefined method " << name << "." << endl;
-                                    return;
-                                }
+                                expr->type = symdata->m_type;
+                            }
+                            break;
+                        }
+                        else {
+                            if ( now_class->getParent() != No_class ) {
+                                SymData* parent = m_class_symtable.lookup(now_class->getParent());
+                                now_class = parent->m_class;
+                            }
+                            else {
+                                ostream& os = semant_error(class_);
+                                os << "Dispatch to undefined method " << name << "." << endl;
+                                return;
                             }
                         }
-                        /*
                     }
-                    else {
-                        ostream& os = semant_error(class_);
-                        os << "Dispatch to undefined method " << name << "." << endl;
-                        return;
-                    }
-                    */
                 }
                 else {
                     expr->type = symdata->m_type;
