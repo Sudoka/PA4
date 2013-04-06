@@ -434,14 +434,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                     expr->type = then_type;
                 }
                 else {
-                    SymData* class_symdata = NULL;
-                    if ( then_type == SELF_TYPE ) {
-                        class_symdata = m_class_symtable.lookup(class_->getName());
-                    }
-                    else {
-                        class_symdata = m_class_symtable.lookup(then_type);
-                    }
-
+                    SymData* class_symdata = get_symdata(class_, then_type);
                     if ( class_symdata != NULL ) {
                         for ( class__class* now_class = class_symdata->m_class; ; ) {
                             Symbol parent = now_class->getParent();
@@ -764,13 +757,7 @@ void ClassTable::semant_branch(class__class* class_, branch_class* branch, Symbo
 }
 
 bool ClassTable::check_parent_type(class__class* class_, Symbol now_type, Symbol correct_type) {
-    SymData* class_symdata = NULL;
-    if ( now_type == SELF_TYPE ) {
-        class_symdata = m_class_symtable.lookup(class_->getName());
-    }
-    else {
-        class_symdata = m_class_symtable.lookup(now_type);
-    }
+    SymData* class_symdata = get_symdata(class_, now_type);
     if ( class_symdata != NULL ) {
         for ( class__class* now_class = class_symdata->m_class; ; ) {
             Symbol parent = now_class->getParent();
@@ -787,6 +774,15 @@ bool ClassTable::check_parent_type(class__class* class_, Symbol now_type, Symbol
     }
     else {
         return false;
+    }
+}
+
+SymData* ClassTable::get_symdata(class__class* class_, Symbol child) {
+    if ( child == SELF_TYPE ) {
+        return m_class_symtable.lookup(class_->getName());
+    }
+    else {
+        return m_class_symtable.lookup(child);
     }
 }
 
