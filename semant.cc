@@ -105,6 +105,13 @@ ClassTable::ClassTable(Classes classes)
     for ( int i = classes->first(); classes->more(i); i = classes->next(i) ) {
         class__class* class_ = static_cast<class__class*>(classes->nth(i));
         semant_class(class_);
+        //cout << "class: " << class_->getName() << endl;
+        //class_->getSymTable().dump();
+    }
+
+    for ( int i = classes->first(); classes->more(i); i = classes->next(i) ) {
+        class__class* class_ = static_cast<class__class*>(classes->nth(i));
+        semant_class_expr(class_);
     }
 
     // FIXME: semant main first?
@@ -160,6 +167,10 @@ void ClassTable::semant_class(class__class* class_) {
             semant_method(class_, feature);
         }
     }
+}
+
+void ClassTable::semant_class_expr(class__class* class_) {
+    Features features = class_->getFeatures();
     for ( int i = features->first(); features->more(i); i = features->next(i) ) {
         Feature feature = features->nth(i);
         if ( feature->getType() == MethodType ) {
@@ -718,9 +729,11 @@ void ClassTable::semant_dispatch(class__class* class_, Expressions actual, SymDa
         for ( int i = actual->first(); actual->more(i) ; i = actual->next(i) ) {
             semant_expression(class_, actual->nth(i));
             if ( symdata != NULL && actual->nth(i)->type != symdata->m_methodType[i] ) {
-                ostream& os = semant_error(class_);
-                os << "In call of method " << name << ", type " << actual->nth(i)->type << " of parameter " << symdata->m_methodArg[i] << " does not conform to declared type " << symdata->m_methodType[i] << "." << endl;
-                break;
+                if ( !check_parent_type(class_, actual->nth(i)->type, symdata->m_methodType[i]) ) {
+                    ostream& os = semant_error(class_);
+                    os << "In call of method " << name << ", type " << actual->nth(i)->type << " of parameter " << symdata->m_methodArg[i] << " does not conform to declared type " << symdata->m_methodType[i] << "." << endl;
+                    break;
+                }
             }
         }
     }

@@ -48,6 +48,7 @@ public:
   ostream& semant_error(Symbol filename, tree_node *t);
 
   void semant_class(class__class* class_);
+  void semant_class_expr(class__class* class_);
   void semant_attr(class__class* class_, Feature feature);
   void semant_method(class__class* class_, Feature feature);
   void semant_method_expr(class__class* class_, Feature feature);
