@@ -354,9 +354,10 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                                 now_class = parent->m_class;
                             }
                             else {
+                                expr->type = No_type;
                                 ostream& os = semant_error(class_);
                                 os << "Dispatch to undefined method " << name << "." << endl;
-                                break;
+                                return;
                             }
                         }
                     }

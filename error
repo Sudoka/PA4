@@ -12,7 +12,6 @@ submission: ..
 	-1 (attrbadinit)	 Init attribute with undefined expression
 	-1 (attroverride)	 Attempt to override parent's attribute
 	-1 (badmethodcallsitself)	 Method called with itself as parameter (wrong type)
-	-1 (badwhilebody)	 While body has error
 	-1 (basic)	 Simple program with a sequence of expressions
 	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
 	-1 (cells)	 Complex program
@@ -47,8 +46,8 @@ submission: ..
 	-1 (subtypemethodreturn)	 Returning a subtype of the declared return type (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 36 out of 74.
+You got a score of 37 out of 74.
 
 Submit code: 
-PA3-36:c9d713dc0a8a563fb099c03e2e87b4a2
+PA3-37:6b00ba1bb1ad9a379583969ffceb4db8
 
