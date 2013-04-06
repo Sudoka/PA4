@@ -238,22 +238,9 @@ void ClassTable::semant_method_expr(class__class* class_, Feature feature) {
     semant_expression(class_, expr);
 
     if ( expr->type != No_type && returntype != No_type && expr->type != returntype ) {
-        SymData* class_symdata = m_class_symtable.lookup(expr->type);
-        if ( class_symdata != NULL ) {
-            for ( class__class* now_class = class_symdata->m_class; ; ) {
-                Symbol parent = now_class->getParent();
-                if ( parent == No_class ) {
-                    ostream& os = semant_error(class_);
-                    os << "Inferred return type " << expr->type << " of method " << methodname << " does not conform to declared return type " << returntype << "." << endl;
-                    break;
-                }
-                else if ( parent == returntype ) {
-                    break;
-                }
-                else {
-                    now_class = m_class_symtable.lookup(parent)->m_class;
-                }
-            }
+        if ( !check_parent_type(class_, expr->type, returntype) ) {
+            ostream& os = semant_error(class_);
+            os << "Inferred return type " << expr->type << " of method " << methodname << " does not conform to declared return type " << returntype << "." << endl;
         }
     }
     symtable.exitscope();
@@ -310,19 +297,6 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 semant_expression(class_, static_expr);
                 Symbol class_type = static_expr->type;
 
-                SymData* class_symdata;
-                if ( class_type == SELF_TYPE ) {
-                    class_symdata = m_class_symtable.lookup(class_->getName());
-                }
-                else {
-                    class_symdata = m_class_symtable.lookup(class_type);
-                }
-
-                if ( class_symdata == NULL ) {
-                    ostream& os = semant_error(class_);
-                    // TODO
-                }
-
                 Symbol dispatch_type = dispatch->getTypeName();
                 SymData* parent_symdata = m_class_symtable.lookup(dispatch_type);
                 if ( parent_symdata == NULL ) {
@@ -330,21 +304,9 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                     os << "Static dispatch to undefined class " << dispatch_type << endl;
                 }
                 else {
-                    if ( class_symdata != NULL ) {
-                        for ( class__class* now_class = class_symdata->m_class; ; ) {
-                            Symbol parent = now_class->getParent();
-                            if ( parent == No_class ) {
-                                ostream& os = semant_error(class_);
-                                os << "Expression type " << class_type << " does not conform to declared static dispatch type " << dispatch_type << "." << endl;
-                                break;
-                            }
-                            else if ( parent == dispatch_type ) {
-                                break;
-                            }
-                            else {
-                                now_class = m_class_symtable.lookup(parent)->m_class;
-                            }
-                        }
+                    if ( !check_parent_type(class_, class_type, dispatch_type) ) {
+                        ostream& os = semant_error(class_);
+                        os << "Expression type " << class_type << " does not conform to declared static dispatch type " << dispatch_type << "." << endl;
                     }
                 }
 
@@ -366,13 +328,21 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 semant_expression(class_, dispatch_expr);
                 Symbol name = dispatch->getName();
 
-                SymData* class_symdata = m_class_symtable.lookup(dispatch_expr->type);
-                MySymTable symtable = class_symdata->m_class->getSymTable();
-                SymData* symdata = symtable.lookup(name);
+                // SELF_TYPE
+                SymData* symdata = NULL;
+                if ( dispatch_expr->type == SELF_TYPE ) {
+                    MySymTable symtable = class_->getSymTable();
+                    symdata = symtable.lookup(name);
+                }
+                else {
+                    SymData* class_symdata = m_class_symtable.lookup(dispatch_expr->type);
+                    MySymTable symtable = class_symdata->m_class->getSymTable();
+                    symdata = symtable.lookup(name);
+                }
                 if ( symdata == NULL ) {
                     for ( class__class* now_class = class_ ; ; ) {
-                        symtable = now_class->getSymTable();
-                        SymData* symdata = symtable.lookup(name);
+                        MySymTable parent_symtable = now_class->getSymTable();
+                        SymData* symdata = parent_symtable.lookup(name);
                         if ( symdata != NULL ) {
                             break;
                         }
@@ -471,11 +441,12 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
 
                 Expression init = let->getInit();
                 semant_expression(class_, init);
-                //if ( init->type != No_type && init->type != declaretype ) {
-                if ( init->type != declaretype ) {
-                    ostream& os = semant_error(class_);
-                    os << "Inferred type " << init->type << " of initialization of " << identifier << " does not confrom to identifier's declared type " << declaretype << "." << endl;
-                    expr->type = No_type;
+                if ( init->type != No_type && init->type != declaretype ) {
+                    if ( !check_parent_type(class_, init->type, declaretype) ) {
+                        expr->type = No_type;
+                        ostream& os = semant_error(class_);
+                        os << "Inferred type " << init->type << " of initialization of " << identifier << " does not confrom to identifier's declared type " << declaretype << "." << endl;
+                    }
                 }
 
                 MySymTable symtable = class_->getSymTable();
@@ -703,53 +674,49 @@ void ClassTable::semant_branch(class__class* class_, branch_class* branch, Symbo
     }
     else {
         Symbol branch_type = branch->getDeclareType();
-        SymData* class_symdata = m_class_symtable.lookup(branch_type);
-        if ( class_symdata == NULL ) {
+        if ( !check_parent_type(class_, branch_type, case_type) ) {
+            branch_type = No_type;
             ostream& os = semant_error(class_);
             //
         }
-        else {
-            for ( class__class* now_class = class_symdata->m_class; ; ) {
-                Symbol parent = now_class->getParent();
-                if ( parent == No_class ) {
-                    branch_type = No_type;
-                    ostream& os = semant_error(class_);
-                    //
-                    break;
-                }
-                else if ( parent == case_type ) {
-                    break;
-                }
-                else {
-                    now_class = m_class_symtable.lookup(parent)->m_class;
-                }
-            }
 
-            SymData* symdata = new SymData(BranchType, class_, branch_type);
-            symtable.addid(branch_name, symdata);
+        SymData* symdata = new SymData(BranchType, class_, branch_type);
+        symtable.addid(branch_name, symdata);
 
-            Expression branch_expr = branch->getExpression();
-            semant_expression(class_, branch_expr);
-            SymData* branch_symdata = m_class_symtable.lookup(branch_expr->type);
-            if ( branch_symdata == NULL ) {
-                ostream& os = semant_error(class_);
-                //
+        Expression branch_expr = branch->getExpression();
+        semant_expression(class_, branch_expr);
+
+        if ( !check_parent_type(class_, branch_expr->type, branch_type) ) {
+            ostream& os = semant_error(class_);
+            //
+        }
+    }
+}
+
+bool ClassTable::check_parent_type(class__class* class_, Symbol now_type, Symbol correct_type) {
+    SymData* class_symdata = NULL;
+    if ( now_type == SELF_TYPE ) {
+        class_symdata = m_class_symtable.lookup(class_->getName());
+    }
+    else {
+        class_symdata = m_class_symtable.lookup(now_type);
+    }
+    if ( class_symdata != NULL ) {
+        for ( class__class* now_class = class_symdata->m_class; ; ) {
+            Symbol parent = now_class->getParent();
+            if ( parent == No_class ) {
+                return false;
             }
-            for ( class__class* now_class = branch_symdata->m_class; ; ) {
-                Symbol parent = now_class->getParent();
-                if ( parent == No_class ) {
-                    ostream& os = semant_error();
-                    //
-                    break;
-                }
-                else if ( branch_type == No_type || parent == branch_type ) {
-                    break;
-                }
-                else {
-                    now_class = m_class_symtable.lookup(parent)->m_class;
-                }
+            else if ( parent == correct_type ) {
+                return true;
+            }
+            else {
+                now_class = m_class_symtable.lookup(parent)->m_class;
             }
         }
+    }
+    else {
+        return false;
     }
 }
 
