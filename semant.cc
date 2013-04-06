@@ -706,7 +706,9 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                         os << "Undeclared identifier " << name << "." << endl;
                         expr->type = No_type;
                     }
-                    expr->type = symdata->m_type;
+                    else {
+                        expr->type = symdata->m_type;
+                    }
                 }
             }
             break;

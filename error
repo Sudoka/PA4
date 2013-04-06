@@ -8,7 +8,6 @@ make: Leaving directory `/home/yyhuang/compiler/PA4'
 =====================================================================
 submission: ..
 
-	-1 (attrbadinit)	 Init attribute with undefined expression
 	-1 (attroverride)	 Attempt to override parent's attribute
 	-1 (basic)	 Simple program with a sequence of expressions
 	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
@@ -24,7 +23,6 @@ submission: ..
 	-1 (list)	 List program
 	-1 (methodnameclash)	 Two children define a function differently (allowed)
 	-1 (newselftype)	 Using a new SELF_TYPE expression (legal)
-	-1 (outofscope)	 Using a name that exists but is out of scope
 	-1 (overridingmethod3)	 Method override example with SELF_TYPE
 	-1 (overridingmethod4)	 Illegal method override - different param types
 	-1 (signaturechange)	 Method override with different number of params
@@ -33,8 +31,8 @@ submission: ..
 	-1 (staticdispatch)	 Simple static dispatch
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 50 out of 74.
+You got a score of 52 out of 74.
 
 Submit code: 
-PA3-50:7dcf72dc125bff1b6ab41e5b8a0181f4
+PA3-52:cd601ecc3d01c46bf40ab49dc7e9a98f
 
