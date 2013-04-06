@@ -507,7 +507,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
 
                 Expression body = loop->getBody();
                 semant_expression(class_, body);
-                expr->type = body->type;
+                expr->type = Object;
             }
             break;
         case CaseType:
