@@ -12,7 +12,6 @@ submission: ..
 	-1 (attrbadinit)	 Init attribute with undefined expression
 	-1 (attroverride)	 Attempt to override parent's attribute
 	-1 (badmethodcallsitself)	 Method called with itself as parameter (wrong type)
-	-1 (badstaticdispatch)	 Bad static dispatch
 	-1 (basic)	 Simple program with a sequence of expressions
 	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
 	-1 (cells)	 Complex program
@@ -21,11 +20,10 @@ submission: ..
 	-1 (comparisons)	 Legal < and <= comparisons
 	-1 (cycleinmethods)	 Methods call each other in a cycle (legal)
 	-1 (dispatch)	 Simple dispatches
+	-1 (expressionblock)	 Simple expression block (i.e. list)
 	-1 (hairyscary)	 Messy legal Cool program
 	-1 (if)	 If statement
-	-1 (inheritsbool)	 Class inherits Bool (illegal)
 	-1 (inheritsselftype)	 Class inherits SELF_TYPE (illegal)
-	-1 (inheritsstring)	 Class inherits String (illegal)
 	-1 (initwithself)	 Attribute initialized with self (legal)
 	-1 (io)	 IO methods
 	-1 (isvoid)	 isvoid expressions
@@ -52,8 +50,8 @@ submission: ..
 	-1 (subtypemethodreturn)	 Returning a subtype of the declared return type (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 31 out of 74.
+You got a score of 33 out of 74.
 
 Submit code: 
-PA3-31:7b07084a26a75815f420afccfa089fbf
+PA3-33:d01d2777b85f19824bae2e7539fda3a1
 

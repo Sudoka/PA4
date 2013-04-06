@@ -147,6 +147,12 @@ void ClassTable::semant_class(class__class* class_) {
             semant_method(class_, feature);
         }
     }
+    for ( int i = features->first(); features->more(i); i = features->next(i) ) {
+        Feature feature = features->nth(i);
+        if ( feature->getType() == MethodType ) {
+            semant_method_expr(class_, feature);
+        }
+    }
 }
 
 void ClassTable::semant_attr(class__class* class_, Feature feature) {
@@ -177,10 +183,12 @@ void ClassTable::semant_method(class__class* class_, Feature feature) {
     if ( symtable.probe(methodname) != NULL ) {
         ostream& os = semant_error(class_);
         os << "Method" << methodname << " is multiply defined." << endl;
+        return;
     }
 
     Symbol returntype = method->getReturnType();
     if ( m_class_symtable.lookup(returntype) == NULL ) {
+        returntype = No_type;
         ostream& os = semant_error(class_);
         os << "Undefined return type " << returntype << " in method " << methodname << "." << endl;
     }
@@ -192,15 +200,35 @@ void ClassTable::semant_method(class__class* class_, Feature feature) {
     for ( int i = formals->first(); formals->more(i); i = formals->next(i) ) {
         semant_formal(class_, method_data, static_cast<formal_class*>(formals->nth(i)));
     }
+    symtable.exitscope();
+    symtable.addid(method->getName(), method_data);
+}
 
-    // FIXME
-    //semant_method_expr();
-    //define method first or we can't find method name
+void ClassTable::semant_method_expr(class__class* class_, Feature feature) {
+    method_class* method = static_cast<method_class*>(feature);
+    Symbol methodname = method->getName();
+
+    Symbol returntype = method->getReturnType();
+    if ( m_class_symtable.lookup(returntype) == NULL ) {
+        returntype = No_type;
+    }
+
+    MySymTable symtable = class_->getSymTable();
+    SymData* method_symdata = symtable.probe(methodname);
+    Formals formals = method->getFormals();
+    if ( formals->len() != static_cast<int>(method_symdata->m_methodArg.size()) ) {
+        return;
+    }
+
+    symtable.enterscope();
+    for ( int i = formals->first(); formals->more(i); i = formals->next(i) ) {
+        semant_formal(class_, NULL, static_cast<formal_class*>(formals->nth(i)));
+    }
+
     Expression expr = method->getExpression();
     semant_expression(class_, expr);
-    // end
 
-    if ( expr->type != No_type && expr->type != returntype ) {
+    if ( expr->type != No_type && returntype != No_type && expr->type != returntype ) {
         SymData* class_symdata = m_class_symtable.lookup(expr->type);
         if ( class_symdata != NULL ) {
             for ( class__class* now_class = class_symdata->m_class; ; ) {
@@ -219,9 +247,7 @@ void ClassTable::semant_method(class__class* class_, Feature feature) {
             }
         }
     }
-
     symtable.exitscope();
-    symtable.addid(method->getName(), method_data);
 }
 
 void ClassTable::semant_formal(class__class* class_, SymData* method_data, formal_class* formal) {
@@ -239,8 +265,10 @@ void ClassTable::semant_formal(class__class* class_, SymData* method_data, forma
     }
     SymData* symdata = new SymData(FormalType, class_, declaretype);
     symtable.addid(formalname, symdata);
-    method_data->m_methodArg.push_back(formalname);
-    method_data->m_methodType.push_back(declaretype);
+    if ( method_data ) {
+        method_data->m_methodArg.push_back(formalname);
+        method_data->m_methodType.push_back(declaretype);
+    }
 }
 
 void ClassTable::semant_expression(class__class* class_, Expression expr) {
@@ -609,7 +637,6 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 MySymTable symtable = class_->getSymTable();
                 if ( name == self ) {
                     expr->type = class_->getName();
-                    // FIXME: if have time XD
                     //expr->type = SELF_TYPE;
                 }
                 else {
