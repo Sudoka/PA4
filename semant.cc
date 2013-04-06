@@ -126,9 +126,18 @@ ClassTable::ClassTable(Classes classes)
 
 void ClassTable::semant_class(class__class* class_) {
     if ( class_->getName() != Object && class_->getName() != No_type ) {
-        if ( m_class_symtable.probe(class_->getParent()) == NULL ) {
+        Symbol parent = class_->getParent();
+        if ( parent == Bool ) {
             ostream& os = semant_error(class_);
-            os << "Class" << class_->getName() << " inherits from an undefined class " << class_->getParent() << "." << endl;
+            os << "Class " << class_->getName() << " cannot inherit class Bool." << endl;
+        }
+        else if ( parent == Str ) {
+            ostream& os = semant_error(class_);
+            os << "Class " << class_->getName() << " cannot inherit class String." << endl;
+        }
+        else if ( m_class_symtable.probe(parent) == NULL ) {
+            ostream& os = semant_error(class_);
+            os << "Class " << class_->getName() << " inherits from an undefined class " << parent << "." << endl;
         }
     }
 
@@ -301,7 +310,14 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 semant_expression(class_, static_expr);
                 Symbol class_type = static_expr->type;
 
-                SymData* class_symdata = m_class_symtable.lookup(class_type);
+                SymData* class_symdata;
+                if ( class_type == SELF_TYPE ) {
+                    class_symdata = m_class_symtable.lookup(class_->getName());
+                }
+                else {
+                    class_symdata = m_class_symtable.lookup(class_type);
+                }
+
                 if ( class_symdata == NULL ) {
                     ostream& os = semant_error(class_);
                     // TODO
@@ -636,8 +652,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 Symbol name = object->getSymbol();
                 MySymTable symtable = class_->getSymTable();
                 if ( name == self ) {
-                    expr->type = class_->getName();
-                    //expr->type = SELF_TYPE;
+                    expr->type = SELF_TYPE;
                 }
                 else {
                     SymData* symdata = symtable.lookup(name);

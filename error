@@ -20,7 +20,6 @@ submission: ..
 	-1 (comparisons)	 Legal < and <= comparisons
 	-1 (cycleinmethods)	 Methods call each other in a cycle (legal)
 	-1 (dispatch)	 Simple dispatches
-	-1 (expressionblock)	 Simple expression block (i.e. list)
 	-1 (hairyscary)	 Messy legal Cool program
 	-1 (if)	 If statement
 	-1 (inheritsselftype)	 Class inherits SELF_TYPE (illegal)
@@ -50,8 +49,8 @@ submission: ..
 	-1 (subtypemethodreturn)	 Returning a subtype of the declared return type (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 33 out of 74.
+You got a score of 34 out of 74.
 
 Submit code: 
-PA3-33:d01d2777b85f19824bae2e7539fda3a1
+PA3-34:ad4cefb8687e7b6f9d876b2047d32d26
 
