@@ -96,7 +96,8 @@ ClassTable::ClassTable(Classes classes)
         class__class* class_ = static_cast<class__class*>(classes->nth(i));
         if ( m_class_symtable.probe(class_->getName()) != NULL ) {
             ostream& os = semant_error(class_);
-            os << "Class" << class_->getName() << " was previously defined." << endl;
+            os << "Class " << class_->getName() << " was previously defined." << endl;
+            continue;
         }
         SymData* symdata = new SymData(ClassType, class_, class_->getName());
         m_class_symtable.addid(class_->getName(), symdata);
@@ -197,6 +198,28 @@ void ClassTable::semant_attr(class__class* class_, Feature feature) {
         ostream& os = semant_error(class_);
         os << "Attribute " << attrname << " is multiply defined in class." << endl;
     }
+    /*
+    else {
+        SymData* class_symdata = get_symdata(class_, class_->getParent());
+        if ( class_symdata != NULL ) {
+            for ( class__class* now_class = class_symdata->m_class; ; ) {
+                Symbol parent = now_class->getParent();
+                MySymTable class_symtable = now_class->getSymTable();
+                if ( parent == No_class ) {
+                    break;
+                }
+                else if ( class_symtable.probe(attrname) != NULL ) {
+                    ostream& os = semant_error(class_);
+                    os << "Attribute " << attrname << " is an attribute of an inherited class." << endl;
+                    return;
+                }
+                else {
+                    now_class = m_class_symtable.lookup(parent)->m_class;
+                }
+            }
+        }
+    }
+    */
 
     Symbol declaretype = attr->getDeclareType();
     if ( m_class_symtable.lookup(declaretype) == NULL ) {
