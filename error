@@ -11,18 +11,15 @@ submission: ..
 	-1 (attroverride)	 Attempt to override parent's attribute
 	-1 (cells)	 Complex program
 	-1 (classes)	 Various classes with inheritance and overriding (legal)
-	-1 (dispatch)	 Simple dispatches
 	-1 (hairyscary)	 Messy legal Cool program
-	-1 (letshadows)	 Let with a variable shadowing one in an outer scope
 	-1 (list)	 List program
 	-1 (methodnameclash)	 Two children define a function differently (allowed)
 	-1 (overridingmethod4)	 Illegal method override - different param types
 	-1 (signaturechange)	 Method override with different number of params
-	-1 (scopes)	 Scope test (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 62 out of 74.
+You got a score of 65 out of 74.
 
 Submit code: 
-PA3-62:fc07727a182da6d255be03103525f144
+PA3-65:17fbe85dad592ecdfaa8493204086814
 

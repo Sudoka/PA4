@@ -539,7 +539,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 semant_expression(class_, body);
                 symtable.exitscope();
 
-                expr->type = declaretype;
+                expr->type = body->type;
             }
             break;
         case PlusType:
