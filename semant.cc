@@ -305,8 +305,10 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 }
                 else {
                     if ( !check_parent_type(class_, class_type, dispatch_type) ) {
+                        expr->type = No_type;
                         ostream& os = semant_error(class_);
                         os << "Expression type " << class_type << " does not conform to declared static dispatch type " << dispatch_type << "." << endl;
+                        return;
                     }
                 }
 
