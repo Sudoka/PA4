@@ -433,34 +433,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 Symbol else_type = else_expr->type;
 
                 // find least upper bound
-                if ( then_type == No_type || else_type == No_type ) {
-                    expr->type = No_type;
-                }
-                else if ( check_parent_type(class_, then_type, else_type) ) {
-                    expr->type = else_type;
-                }
-                else if ( check_parent_type(class_, else_type, then_type) ) {
-                    expr->type = then_type;
-                }
-                else {
-                    SymData* class_symdata = get_symdata(class_, then_type);
-                    if ( class_symdata != NULL ) {
-                        for ( class__class* now_class = class_symdata->m_class; ; ) {
-                            Symbol parent = now_class->getParent();
-                            if ( parent == Object ) {
-                                expr->type = parent;
-                                break;
-                            }
-                            else if ( check_parent_type(class_, else_type, parent) ) {
-                                expr->type = parent;
-                                break;
-                            }
-                            else {
-                                now_class = m_class_symtable.lookup(parent)->m_class;
-                            }
-                        }
-                    }
-                }
+                expr->type = get_least_upper_bound(class_, then_type, else_type);
             }
             break;
         case LoopType:
@@ -482,16 +455,22 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
         case CaseType:
             {
                 typcase_class* typcase = static_cast<typcase_class*>(expr);
-                Expression expr = typcase->getExpression();
-                semant_expression(class_, expr);
-                Symbol case_type = expr->type;
+                Expression typexpr = typcase->getExpression();
+                semant_expression(class_, typexpr);
+                Symbol case_type = typexpr->type;
 
                 MySymTable symtable = class_->getSymTable();
                 symtable.enterscope();
 
                 Cases cases = typcase->getCases();
                 for ( int i = cases->first(); cases->more(i); i = cases->next(i) ) {
-                    semant_branch(class_, static_cast<branch_class*>(cases->nth(i)), case_type);
+                    Symbol branch_type = semant_branch(class_, static_cast<branch_class*>(cases->nth(i)), case_type);
+                    if ( i == 0 ) {
+                        expr->type = branch_type;
+                    }
+                    else {
+                        expr->type = get_least_upper_bound(class_, expr->type, branch_type);
+                    }
                 }
                 symtable.exitscope();
             }
@@ -739,12 +718,13 @@ void ClassTable::semant_dispatch(class__class* class_, Expressions actual, SymDa
     }
 }
 
-void ClassTable::semant_branch(class__class* class_, branch_class* branch, Symbol case_type) {
+Symbol ClassTable::semant_branch(class__class* class_, branch_class* branch, Symbol case_type) {
     MySymTable symtable = class_->getSymTable();
     Symbol branch_name = branch->getName();
     if ( symtable.probe(branch_name) != NULL ) {
         ostream& os = semant_error(class_);
         //
+        return No_type;
     }
     else {
         Symbol branch_type = branch->getDeclareType();
@@ -759,11 +739,7 @@ void ClassTable::semant_branch(class__class* class_, branch_class* branch, Symbo
 
         Expression branch_expr = branch->getExpression();
         semant_expression(class_, branch_expr);
-
-        if ( !check_parent_type(class_, branch_expr->type, branch_type) ) {
-            ostream& os = semant_error(class_);
-            //
-        }
+        return branch_type;
     }
 }
 
@@ -795,6 +771,36 @@ SymData* ClassTable::get_symdata(class__class* class_, Symbol child) {
     else {
         return m_class_symtable.lookup(child);
     }
+}
+
+Symbol ClassTable::get_least_upper_bound(class__class* class_, Symbol type1, Symbol type2) {
+    if ( type1 == No_type || type2 == No_type ) {
+        return No_type;
+    }
+    else if ( check_parent_type(class_, type1, type2) ) {
+        return type2;
+    }
+    else if ( check_parent_type(class_, type2, type1) ) {
+        return type1;
+    }
+    else {
+        SymData* class_symdata = get_symdata(class_, type1);
+        if ( class_symdata != NULL ) {
+            for ( class__class* now_class = class_symdata->m_class; ; ) {
+                Symbol parent = now_class->getParent();
+                if ( parent == Object ) {
+                    return parent;
+                }
+                else if ( check_parent_type(class_, type2, parent) ) {
+                    return parent;
+                }
+                else {
+                    now_class = m_class_symtable.lookup(parent)->m_class;
+                }
+            }
+        }
+    }
+    return No_type;
 }
 
 void ClassTable::install_basic_classes() {

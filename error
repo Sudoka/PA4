@@ -26,11 +26,10 @@ submission: ..
 	-1 (overridingmethod4)	 Illegal method override - different param types
 	-1 (signaturechange)	 Method override with different number of params
 	-1 (scopes)	 Scope test (legal)
-	-1 (simplecase)	 A simple case expr
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 54 out of 74.
+You got a score of 55 out of 74.
 
 Submit code: 
-PA3-54:7651c25c4b987011cfd59ecc3777d98b
+PA3-55:b5d83e93dc1834117c5f83ad131b7006
 
