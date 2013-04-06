@@ -9,13 +9,11 @@ make: Leaving directory `/home/yyhuang/compiler/PA4'
 submission: ..
 
 	-1 (attroverride)	 Attempt to override parent's attribute
-	-1 (basic)	 Simple program with a sequence of expressions
 	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
 	-1 (cells)	 Complex program
 	-1 (classes)	 Various classes with inheritance and overriding (legal)
 	-1 (dispatch)	 Simple dispatches
 	-1 (hairyscary)	 Messy legal Cool program
-	-1 (isvoid)	 isvoid expressions
 	-1 (letshadows)	 Let with a variable shadowing one in an outer scope
 	-1 (list)	 List program
 	-1 (methodnameclash)	 Two children define a function differently (allowed)
@@ -24,8 +22,8 @@ submission: ..
 	-1 (scopes)	 Scope test (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 59 out of 74.
+You got a score of 61 out of 74.
 
 Submit code: 
-PA3-59:00d7640497fd77fca5b5feb1d96430de
+PA3-61:0eed4c71e0577c248b778f2fce9c42e8
 

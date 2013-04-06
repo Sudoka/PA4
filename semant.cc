@@ -395,12 +395,17 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                     symdata = symtable.lookup(name);
                 }
                 if ( symdata == NULL ) {
-                    if ( dispatch_expr->type == SELF_TYPE ) {
+                    //if ( dispatch_expr->type == SELF_TYPE ) {
                         for ( class__class* now_class = class_ ; ; ) {
                             MySymTable parent_symtable = now_class->getSymTable();
                             SymData* symdata = parent_symtable.lookup(name);
                             if ( symdata != NULL ) {
-                                expr->type = symdata->m_type;
+                                if ( symdata->m_type == SELF_TYPE ) {
+                                    expr->type = dispatch_expr->type;
+                                }
+                                else {
+                                    expr->type = symdata->m_type;
+                                }
                                 break;
                             }
                             else {
@@ -415,12 +420,14 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                                 }
                             }
                         }
+                        /*
                     }
                     else {
                         ostream& os = semant_error(class_);
                         os << "Dispatch to undefined method " << name << "." << endl;
                         return;
                     }
+                    */
                 }
                 else {
                     expr->type = symdata->m_type;
@@ -697,8 +704,8 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
         case IsVoidType:
             {
                 isvoid_class* isvoid = static_cast<isvoid_class*>(expr);
-                Expression expr = isvoid->getExpression();
-                semant_expression(class_, expr);
+                Expression voidexpr = isvoid->getExpression();
+                semant_expression(class_, voidexpr);
                 expr->type = Bool;
             }
             break;
