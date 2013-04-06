@@ -24,7 +24,6 @@ submission: ..
 	-1 (inheritsselftype)	 Class inherits SELF_TYPE (illegal)
 	-1 (io)	 IO methods
 	-1 (isvoid)	 isvoid expressions
-	-1 (letself)	 Let with self in binding (illegal)
 	-1 (letshadows)	 Let with a variable shadowing one in an outer scope
 	-1 (list)	 List program
 	-1 (methodcallsitself)	 Method calls itself legally
@@ -46,8 +45,8 @@ submission: ..
 	-1 (subtypemethodreturn)	 Returning a subtype of the declared return type (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 37 out of 74.
+You got a score of 38 out of 74.
 
 Submit code: 
-PA3-37:6b00ba1bb1ad9a379583969ffceb4db8
+PA3-38:2d6c989d3678172f4444b8bcdaaa5377
 

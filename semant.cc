@@ -268,6 +268,9 @@ void ClassTable::semant_formal(class__class* class_, SymData* method_data, forma
 }
 
 void ClassTable::semant_expression(class__class* class_, Expression expr) {
+    // give expr default type
+    expr->type = No_type;
+
     TreeType type = expr->getType();
     switch (type) {
         case AssignType:
@@ -305,7 +308,6 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 }
                 else {
                     if ( !check_parent_type(class_, class_type, dispatch_type) ) {
-                        expr->type = No_type;
                         ostream& os = semant_error(class_);
                         os << "Expression type " << class_type << " does not conform to declared static dispatch type " << dispatch_type << "." << endl;
                         return;
@@ -354,7 +356,6 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                                 now_class = parent->m_class;
                             }
                             else {
-                                expr->type = No_type;
                                 ostream& os = semant_error(class_);
                                 os << "Dispatch to undefined method " << name << "." << endl;
                                 return;
@@ -435,18 +436,21 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             {
                 let_class* let = static_cast<let_class*>(expr);
                 Symbol identifier = let->getIdentifier();
+                if ( identifier == self ) {
+                    ostream& os = semant_error(class_);
+                    os << "'self' cannot be bound in a 'let' expression." << endl;
+                    return;
+                }
                 Symbol declaretype = let->getDeclareType();
                 if ( m_class_symtable.lookup(declaretype) == NULL ) {
                     ostream& os = semant_error(class_);
                     os << "Class " << declaretype << " of let-bound identifier " << identifier << " is undefined." << endl;
-                    expr->type = No_type;
                 }
 
                 Expression init = let->getInit();
                 semant_expression(class_, init);
                 if ( init->type != No_type && init->type != declaretype ) {
                     if ( !check_parent_type(class_, init->type, declaretype) ) {
-                        expr->type = No_type;
                         ostream& os = semant_error(class_);
                         os << "Inferred type " << init->type << " of initialization of " << identifier << " does not confrom to identifier's declared type " << declaretype << "." << endl;
                     }
@@ -602,7 +606,6 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 if ( symdata == NULL ) {
                     ostream& os = semant_error(class_);
                     os << "'new' used with undefined class " << name << "." << endl;
-                    expr->type = No_type;
                 }
                 else {
                     expr->type = symdata->m_type;
@@ -616,9 +619,6 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 semant_expression(class_, expr);
                 expr->type = Bool;
             }
-            break;
-        case NoExpressionType:
-            expr->type = No_type;
             break;
         case ObjectType:
             {
@@ -639,9 +639,8 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 }
             }
             break;
+        case NoExpressionType:
         default:
-            //expr->dump(cout, 0);
-            //cout << "type: " << type << endl;
             break;
         }
 }
