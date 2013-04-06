@@ -306,8 +306,7 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 }
                 semant_expression(class_, assign->getExpression());
                 Symbol ret_type = assign->getExpression()->type;
-                //if ( ret_type != No_type && ret_type != symdata->m_type ) {
-                if ( ret_type != symdata->m_type ) {
+                if ( ret_type != No_type && symdata->m_type != No_type && ret_type != symdata->m_type ) {
                     ostream& os = semant_error(class_);
                     os << "Type " << ret_type << " of assigned expression does not confrom to declared type " << symdata->m_type << " of identifier " << name << "." << endl;
                 }
@@ -388,7 +387,6 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                                     return;
                                 }
                             }
-                            break;
                         }
                     }
                     else {

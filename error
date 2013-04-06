@@ -17,7 +17,6 @@ submission: ..
 	-1 (comparisons)	 Legal < and <= comparisons
 	-1 (dispatch)	 Simple dispatches
 	-1 (hairyscary)	 Messy legal Cool program
-	-1 (io)	 IO methods
 	-1 (isvoid)	 isvoid expressions
 	-1 (letshadows)	 Let with a variable shadowing one in an outer scope
 	-1 (list)	 List program
@@ -31,8 +30,8 @@ submission: ..
 	-1 (staticdispatch)	 Simple static dispatch
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 52 out of 74.
+You got a score of 53 out of 74.
 
 Submit code: 
-PA3-52:cd601ecc3d01c46bf40ab49dc7e9a98f
+PA3-53:cb53e77e7a52737fc202bfe43c992101
 
