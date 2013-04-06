@@ -770,9 +770,17 @@ Symbol ClassTable::semant_branch(class__class* class_, branch_class* branch, Sym
             ostream& os = semant_error(class_);
             //
         }
+        if ( symtable.probe(branch_type) != NULL ) {
+            ostream& os = semant_error(class_);
+            os << "Duplicate branch " << branch_type << " in case statement." << endl;
+            return No_type;
+        }
 
-        SymData* symdata = new SymData(BranchType, class_, branch_type);
+        SymData* symdata = new SymData(BranchNameType, class_, branch_type);
         symtable.addid(branch_name, symdata);
+
+        symdata = new SymData(BranchTypeType, class_, branch_type);
+        symtable.addid(branch_type, symdata);
 
         Expression branch_expr = branch->getExpression();
         semant_expression(class_, branch_expr);

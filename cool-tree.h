@@ -48,7 +48,8 @@ enum TreeType {
     NoExpressionType,
     ObjectType,
     // Branch
-    BranchType
+    BranchNameType,
+    BranchTypeType
 };
 
 

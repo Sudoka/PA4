@@ -9,7 +9,6 @@ make: Leaving directory `/home/yyhuang/compiler/PA4'
 submission: ..
 
 	-1 (attroverride)	 Attempt to override parent's attribute
-	-1 (caseidenticalbranch)	 Duplicate branch in a case expr
 	-1 (cells)	 Complex program
 	-1 (classes)	 Various classes with inheritance and overriding (legal)
 	-1 (dispatch)	 Simple dispatches
@@ -22,8 +21,8 @@ submission: ..
 	-1 (scopes)	 Scope test (legal)
 	-1 (trickyatdispatch)	 Tricky (legal) static dispatch
 =====================================================================
-You got a score of 61 out of 74.
+You got a score of 62 out of 74.
 
 Submit code: 
-PA3-61:0eed4c71e0577c248b778f2fce9c42e8
+PA3-62:fc07727a182da6d255be03103525f144
 
