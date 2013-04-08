@@ -195,32 +195,13 @@ void ClassTable::semant_attr_expr(class__class* class_, Feature feature) {
     Symbol attrname = attr->getName();
 
     // check attr in parent
-    for ( class__class* now_class = class_; ; ) {
-        if ( !now_class ) {
-            break;
-        }
-
-        Symbol parent = now_class->getParent();
-        if ( parent == No_class || parent == SELF_TYPE ) {
-            break;
-        }
-
-        SymData* class_symdata = class_lookup(class_, parent);
-        if ( !class_symdata ) {
-            break;
-        }
-
-        MySymTable parent_symtable = class_symdata->m_class->getSymTable();
-        if ( parent_symtable.probe(attrname) ) {
-            ostream& os = semant_error(class_);
-            os << "Attribute " << attrname << " is an attribute of an inherited class."
-               << endl;
-            return;
-        }
-        else {
-            now_class = class_symdata->m_class;
-        }
+    if ( name_lookup(class_, attrname) ) {
+        ostream& os = semant_error(class_);
+        os << "Attribute " << attrname << " is an attribute of an inherited class."
+           << endl;
+        return;
     }
+
     /*
     Symbol declaretype = attr->getDeclareType();
     if ( !m_class_symtable.lookup(declaretype) ) {
@@ -279,52 +260,31 @@ void ClassTable::semant_method_expr(class__class* class_, Feature feature) {
     }
 
     // check method in parent return type, argument number and argument type
-    for ( class__class* now_class = class_; ; ) {
-        if ( !now_class ) {
-            break;
+    if ( SymData* parent_method_data = name_lookup(class_, methodname) ) {
+        Symbol parent_method_type = parent_method_data->m_type;
+        if ( parent_method_type != No_type && returntype != No_type && \
+             parent_method_type != returntype ) {
+            if ( !check_type(class_, returntype, parent_method_type) ) {
+                ostream& os = semant_error(class_);
+                return;
+            }
         }
-
-        Symbol parent = now_class->getParent();
-        if ( parent == No_class || parent == SELF_TYPE ) {
-            break;
+        else if ( method_symdata->m_methodArg.size() != parent_method_data->m_methodArg.size() ) {
+            ostream& os = semant_error(class_);
+            os << "Incompatible number of formal parameters in redefined method "
+               << methodname << "." << endl;
+            return;
         }
-
-        SymData* class_symdata = class_lookup(class_, parent);
-        if ( !class_symdata ) {
-            break;
-        }
-
-        MySymTable parent_symtable = class_symdata->m_class->getSymTable();
-        if ( SymData* parent_method_data = parent_symtable.probe(methodname) ) {
-            Symbol parent_method_type = parent_method_data->m_type;
-            if ( parent_method_type != No_type && returntype != No_type && \
-                 parent_method_type != returntype ) {
-                if ( !check_type(class_, returntype, parent_method_type) ) {
+        else {
+            for ( int i = 0; i < static_cast<int>(method_symdata->m_methodArg.size()) ; ++i ) {
+                if ( method_symdata->m_methodType[i] != parent_method_data->m_methodType[i] ) {
                     ostream& os = semant_error(class_);
+                    os << "In redefined method " << methodname << ", parameter type "
+                       << method_symdata->m_methodType[i] << " is different from original type "
+                       << parent_method_data->m_methodType[i] << endl;
                     return;
                 }
             }
-            else if ( method_symdata->m_methodArg.size() != parent_method_data->m_methodArg.size() ) {
-                ostream& os = semant_error(class_);
-                os << "Incompatible number of formal parameters in redefined method "
-                   << methodname << "." << endl;
-                return;
-            }
-            else {
-                for ( int i = 0; i < static_cast<int>(method_symdata->m_methodArg.size()) ; ++i ) {
-                    if ( method_symdata->m_methodType[i] != parent_method_data->m_methodType[i] ) {
-                        ostream& os = semant_error(class_);
-                        os << "In redefined method " << methodname << ", parameter type "
-                           << method_symdata->m_methodType[i] << " is different from original type "
-                           << parent_method_data->m_methodType[i] << endl;
-                        return;
-                    }
-                }
-            }
-            break;
-        }
-        else {
-            now_class = class_symdata->m_class;
         }
     }
 
@@ -392,17 +352,19 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                     os << "Cannot assign to 'self'." << endl;
                     return;
                 }
-                SymData* symdata = class_->getSymTable().lookup(name);
+                SymData* symdata = name_lookup(class_, name, true);
                 if ( !symdata ) {
                     ostream& os = semant_error(class_);
                     os << "Assignment to undeclared variable " << name << "." << endl;
                 }
                 semant_expression(class_, assign->getExpression());
                 Symbol ret_type = assign->getExpression()->type;
-                if ( ret_type != No_type && symdata->m_type != No_type && ret_type != symdata->m_type ) {
+                if ( ret_type != No_type && symdata && symdata->m_type != No_type && \
+                     ret_type != symdata->m_type ) {
                     ostream& os = semant_error(class_);
-                    os << "Type " << ret_type << " of assigned expression does not confrom to declared "
-                       << "type " << symdata->m_type << " of identifier " << name << "." << endl;
+                    os << "Type " << ret_type << " of assigned expression does not confrom to "
+                       << "declared type " << symdata->m_type << " of identifier " << name << "."
+                       << endl;
                 }
                 expr->type = ret_type;
             }
@@ -744,12 +706,11 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
             {
                 object_class* object = static_cast<object_class*>(expr);
                 Symbol name = object->getSymbol();
-                MySymTable symtable = class_->getSymTable();
                 if ( name == self ) {
                     expr->type = SELF_TYPE;
                 }
                 else {
-                    SymData* symdata = symtable.lookup(name);
+                    SymData* symdata = name_lookup(class_, name, true);
                     if ( !symdata ) {
                         ostream& os = semant_error(class_);
                         os << "Undeclared identifier " << name << "." << endl;
@@ -913,6 +874,42 @@ Symbol ClassTable::get_least_upper_bound(class__class* class_, Symbol type1, Sym
     }
     return No_type;
 }
+
+SymData* ClassTable::name_lookup(class__class* class_, Symbol name, bool check_current) {
+    SymData* symdata = NULL;
+    if ( check_current ) {
+        symdata = class_->getSymTable().lookup(name);
+        if ( symdata ) {
+            return symdata;
+        }
+    }
+    for ( class__class* now_class = class_; ; ) {
+        if ( !now_class ) {
+            break;
+        }
+
+        Symbol parent = now_class->getParent();
+        if ( parent == No_class || parent == SELF_TYPE ) {
+            break;
+        }
+
+        SymData* class_symdata = class_lookup(class_, parent);
+        if ( !class_symdata ) {
+            break;
+        }
+
+        MySymTable parent_symtable = class_symdata->m_class->getSymTable();
+        symdata = parent_symtable.probe(name);
+        if ( symdata ) {
+            break;
+        }
+        else {
+            now_class = class_symdata->m_class;
+        }
+    }
+    return symdata;
+}
+
 
 void ClassTable::install_basic_classes() {
 

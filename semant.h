@@ -62,6 +62,7 @@ public:
   bool check_type(class__class* class_, Symbol now_type, Symbol correct_type);
   SymData* class_lookup(class__class* class_, Symbol child);
   Symbol get_least_upper_bound(class__class* class_, Symbol type1, Symbol type2);
+  SymData* name_lookup(class__class* class_, Symbol name, bool check_current=false);
 };
 
 

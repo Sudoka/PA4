@@ -9,12 +9,10 @@ make: Leaving directory `/home/yyhuang/compiler/PA4'
 submission: ..
 
 	-1 (cells)	 Complex program
-	-1 (classes)	 Various classes with inheritance and overriding (legal)
 	-1 (hairyscary)	 Messy legal Cool program
-	-1 (methodnameclash)	 Two children define a function differently (allowed)
 =====================================================================
-You got a score of 70 out of 74.
+You got a score of 72 out of 74.
 
 Submit code: 
-PA3-70:eed76f126c7c5c36ed1aa599cedc2589
+PA3-72:61fbbe6de125d6a5bdb9bba3eb98652e
 
