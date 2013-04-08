@@ -475,7 +475,8 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 symtable.enterscope();
                 Cases cases = typcase->getCases();
                 for ( int i = cases->first(); cases->more(i); i = cases->next(i) ) {
-                    Symbol branch_type = semant_branch(class_, static_cast<branch_class*>(cases->nth(i)),
+                    Symbol branch_type = semant_branch(class_,
+                                                       static_cast<branch_class*>(cases->nth(i)),
                                                        typexpr->type);
                     if ( i == 0 ) {
                         expr->type = branch_type;
@@ -786,30 +787,19 @@ void ClassTable::semant_dispatch_formal(class__class* class_, Expressions actual
 Symbol ClassTable::semant_branch(class__class* class_, branch_class* branch, Symbol case_type) {
     MySymTable symtable = class_->getSymTable();
     Symbol branch_name = branch->getName();
-    if ( symtable.probe(branch_name) ) {
+    Symbol branch_type = branch->getDeclareType();
+    if ( symtable.probe(branch_type) ) {
         ostream& os = semant_error(class_);
+        os << "Duplicate branch " << branch_type << " in case statement." << endl;
         return No_type;
     }
-    else {
-        Symbol branch_type = branch->getDeclareType();
-        if ( !check_type(class_, branch_type, case_type) ) {
-            branch_type = No_type;
-            ostream& os = semant_error(class_);
-            return No_type;
-        }
-        if ( symtable.probe(branch_type) ) {
-            ostream& os = semant_error(class_);
-            os << "Duplicate branch " << branch_type << " in case statement." << endl;
-            return No_type;
-        }
 
-        symtable.addid(branch_name, new SymData(BranchNameType, class_, branch_type));
-        symtable.addid(branch_type, new SymData(BranchTypeType, class_, branch_type));
+    symtable.addid(branch_name, new SymData(BranchNameType, class_, branch_type));
+    symtable.addid(branch_type, new SymData(BranchTypeType, class_, branch_type));
 
-        Expression branch_expr = branch->getExpression();
-        semant_expression(class_, branch_expr);
-        return branch_type;
-    }
+    Expression branch_expr = branch->getExpression();
+    semant_expression(class_, branch_expr);
+    return branch_expr->type;
 }
 
 bool ClassTable::check_type(class__class* class_, Symbol now_type, Symbol correct_type) {
