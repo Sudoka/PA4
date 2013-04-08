@@ -359,8 +359,8 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 }
                 semant_expression(class_, assign->getExpression());
                 Symbol ret_type = assign->getExpression()->type;
-                if ( ret_type != No_type && symdata && symdata->m_type != No_type && \
-                     ret_type != symdata->m_type ) {
+                if ( ret_type != No_type && \
+                     symdata && symdata->m_type != No_type && ret_type != symdata->m_type ) {
                     ostream& os = semant_error(class_);
                     os << "Type " << ret_type << " of assigned expression does not confrom to "
                        << "declared type " << symdata->m_type << " of identifier " << name << "."
@@ -413,7 +413,12 @@ void ClassTable::semant_expression(class__class* class_, Expression expr) {
                 SymData* method_symdata = class_symdata->m_class->getSymTable().lookup(methodname);
 
                 if ( method_symdata ) {
-                    expr->type = method_symdata->m_type;
+                    if ( method_symdata->m_type == SELF_TYPE ) {
+                        expr->type = class_symdata->m_class->getName();
+                    }
+                    else {
+                        expr->type = method_symdata->m_type;
+                    }
                 }
                 else {
                     SymData* parent = m_class_symtable.lookup(class_->getParent());
