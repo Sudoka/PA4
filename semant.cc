@@ -103,8 +103,6 @@ ClassTable::ClassTable(Classes classes)
     for ( int i = classes->first(); classes->more(i); i = classes->next(i) ) {
         class__class* class_ = static_cast<class__class*>(classes->nth(i));
         semant_class(class_);
-        //cout << "class: " << class_->getName() << endl;
-        //class_->getSymTable().dump();
     }
 
     SymData* class_symdata = m_class_symtable.probe(Main);
@@ -202,13 +200,6 @@ void ClassTable::semant_attr_expr(class__class* class_, Feature feature) {
         return;
     }
 
-    /*
-    Symbol declaretype = attr->getDeclareType();
-    if ( !m_class_symtable.lookup(declaretype) ) {
-        ostream& os = semant_error(class_);
-        os << "Class " << declaretype << " of attribute " << attrname << " is undefined." << endl;
-    }
-    */
     semant_expression(class_, attr->getExpression());
 }
 
