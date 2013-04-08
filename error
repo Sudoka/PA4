@@ -8,16 +8,13 @@ make: Leaving directory `/home/yyhuang/compiler/PA4'
 =====================================================================
 submission: ..
 
-	-1 (attroverride)	 Attempt to override parent's attribute
 	-1 (cells)	 Complex program
 	-1 (classes)	 Various classes with inheritance and overriding (legal)
 	-1 (hairyscary)	 Messy legal Cool program
 	-1 (methodnameclash)	 Two children define a function differently (allowed)
-	-1 (overridingmethod4)	 Illegal method override - different param types
-	-1 (signaturechange)	 Method override with different number of params
 =====================================================================
-You got a score of 67 out of 74.
+You got a score of 70 out of 74.
 
 Submit code: 
-PA3-67:73fd546ffa7dfc67830c842a6c3cce1c
+PA3-70:eed76f126c7c5c36ed1aa599cedc2589
 

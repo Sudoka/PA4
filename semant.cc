@@ -180,28 +180,6 @@ void ClassTable::semant_attr(class__class* class_, Feature feature) {
         ostream& os = semant_error(class_);
         os << "Attribute " << attrname << " is multiply defined in class." << endl;
     }
-    /*
-    else {
-        SymData* class_symdata = class_lookup(class_, class_->getParent());
-        if ( class_symdata ) {
-            for ( class__class* now_class = class_symdata->m_class; ; ) {
-                Symbol parent = now_class->getParent();
-                MySymTable class_symtable = now_class->getSymTable();
-                if ( parent == No_class ) {
-                    break;
-                }
-                else if ( class_symtable.probe(attrname) ) {
-                    ostream& os = semant_error(class_);
-                    os << "Attribute " << attrname << " is an attribute of an inherited class." << endl;
-                    return;
-                }
-                else {
-                    now_class = m_class_symtable.lookup(parent)->m_class;
-                }
-            }
-        }
-    }
-    */
 
     Symbol declaretype = attr->getDeclareType();
     if ( !class_lookup(class_, declaretype) ) {
@@ -214,6 +192,35 @@ void ClassTable::semant_attr(class__class* class_, Feature feature) {
 
 void ClassTable::semant_attr_expr(class__class* class_, Feature feature) {
     attr_class* attr = static_cast<attr_class*>(feature);
+    Symbol attrname = attr->getName();
+
+    // check attr in parent
+    for ( class__class* now_class = class_; ; ) {
+        if ( !now_class ) {
+            break;
+        }
+
+        Symbol parent = now_class->getParent();
+        if ( parent == No_class || parent == SELF_TYPE ) {
+            break;
+        }
+
+        SymData* class_symdata = class_lookup(class_, parent);
+        if ( !class_symdata ) {
+            break;
+        }
+
+        MySymTable parent_symtable = class_symdata->m_class->getSymTable();
+        if ( parent_symtable.probe(attrname) ) {
+            ostream& os = semant_error(class_);
+            os << "Attribute " << attrname << " is an attribute of an inherited class."
+               << endl;
+            return;
+        }
+        else {
+            now_class = class_symdata->m_class;
+        }
+    }
     /*
     Symbol declaretype = attr->getDeclareType();
     if ( !m_class_symtable.lookup(declaretype) ) {
@@ -263,9 +270,62 @@ void ClassTable::semant_method_expr(class__class* class_, Feature feature) {
 
     MySymTable symtable = class_->getSymTable();
     SymData* method_symdata = symtable.probe(methodname);
+    if ( !method_symdata ) {
+        return;
+    }
     Formals formals = method->getFormals();
     if ( formals->len() != static_cast<int>(method_symdata->m_methodArg.size()) ) {
         return;
+    }
+
+    // check method in parent return type, argument number and argument type
+    for ( class__class* now_class = class_; ; ) {
+        if ( !now_class ) {
+            break;
+        }
+
+        Symbol parent = now_class->getParent();
+        if ( parent == No_class || parent == SELF_TYPE ) {
+            break;
+        }
+
+        SymData* class_symdata = class_lookup(class_, parent);
+        if ( !class_symdata ) {
+            break;
+        }
+
+        MySymTable parent_symtable = class_symdata->m_class->getSymTable();
+        if ( SymData* parent_method_data = parent_symtable.probe(methodname) ) {
+            Symbol parent_method_type = parent_method_data->m_type;
+            if ( parent_method_type != No_type && returntype != No_type && \
+                 parent_method_type != returntype ) {
+                if ( !check_type(class_, returntype, parent_method_type) ) {
+                    ostream& os = semant_error(class_);
+                    return;
+                }
+            }
+            else if ( method_symdata->m_methodArg.size() != parent_method_data->m_methodArg.size() ) {
+                ostream& os = semant_error(class_);
+                os << "Incompatible number of formal parameters in redefined method "
+                   << methodname << "." << endl;
+                return;
+            }
+            else {
+                for ( int i = 0; i < static_cast<int>(method_symdata->m_methodArg.size()) ; ++i ) {
+                    if ( method_symdata->m_methodType[i] != parent_method_data->m_methodType[i] ) {
+                        ostream& os = semant_error(class_);
+                        os << "In redefined method " << methodname << ", parameter type "
+                           << method_symdata->m_methodType[i] << " is different from original type "
+                           << parent_method_data->m_methodType[i] << endl;
+                        return;
+                    }
+                }
+            }
+            break;
+        }
+        else {
+            now_class = class_symdata->m_class;
+        }
     }
 
     symtable.enterscope();
